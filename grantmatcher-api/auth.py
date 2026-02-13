@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 import bcrypt
+import hashlib
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -17,31 +18,23 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def verify_password(plain_password, hashed_password):
     try:
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        # Preprocess password the same way as during hashing
+        password_bytes = plain_password.encode('utf-8')
+        sha256_hash = hashlib.sha256(password_bytes).hexdigest()
+        return bcrypt.checkpw(sha256_hash.encode('utf-8'), hashed_password.encode('utf-8'))
     except:
         return False
 
 def get_password_hash(password):
-    # bcrypt has a 72-byte limit, so truncate the password if necessary
-    # Keep removing characters from the end until the UTF-8 encoding is <= 72 bytes
-    truncated_password = password
-    while len(truncated_password.encode('utf-8')) > 72:
-        truncated_password = truncated_password[:-1]
+    # Best practice: Use SHA-256 preprocessing for unlimited password length
+    # This prevents truncation attacks and supports arbitrarily long passwords
+    password_bytes = password.encode('utf-8')
+    sha256_hash = hashlib.sha256(password_bytes).hexdigest()
 
-    # Hash the password with bcrypt directly
+    # Hash the hex-encoded SHA-256 digest with bcrypt
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(truncated_password.encode('utf-8'), salt)
+    hashed = bcrypt.hashpw(sha256_hash.encode('utf-8'), salt)
     return hashed.decode('utf-8')
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
 
 def authenticate_user(db: Session, email: str, password: str):
     user = db.query(User).filter(User.email == email).first()
