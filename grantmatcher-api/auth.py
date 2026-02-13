@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -13,11 +13,13 @@ SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")  # Change in prod
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    except:
+        return False
 
 def get_password_hash(password):
     # bcrypt has a 72-byte limit, so truncate the password if necessary
@@ -25,7 +27,11 @@ def get_password_hash(password):
     truncated_password = password
     while len(truncated_password.encode('utf-8')) > 72:
         truncated_password = truncated_password[:-1]
-    return pwd_context.hash(truncated_password)
+
+    # Hash the password with bcrypt directly
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(truncated_password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
