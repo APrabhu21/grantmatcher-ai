@@ -19,12 +19,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",  # Development
         "http://localhost:3001",  # Development alternative
-        "https://grantmatcher-ai.vercel.app",  # Vercel production
-        "https://grantmatcher-ai-git-main-aprabhu21.vercel.app",  # Vercel preview
-        "https://grantmatcher-ai-*.vercel.app",  # Vercel preview branches
     ],
+    allow_origin_regex=r"https://grantmatcher-ai.*\.vercel\.app",  # Vercel deployments
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
