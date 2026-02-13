@@ -21,7 +21,7 @@ app.add_middleware(
         "http://localhost:3001",  # Development alternative
         "https://grantmatcher-ai.vercel.app",  # Vercel production
         "https://grantmatcher-ai-git-main-aprabhu21.vercel.app",  # Vercel preview
-        "*",  # Allow all origins for now (remove in production)
+        "https://grantmatcher-ai-*.vercel.app",  # Vercel preview branches
     ],
     allow_credentials=True,
     allow_methods=["*"],
