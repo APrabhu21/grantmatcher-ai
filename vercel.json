@@ -1,6 +1,5 @@
 {
-  "buildCommand": "cd grantmatcher-web && npm run build",
-  "outputDirectory": "grantmatcher-web/.next",
   "framework": "nextjs",
-  "rootDirectory": "grantmatcher-web"
+  "buildCommand": "npm run build",
+  "outputDirectory": "grantmatcher-web/.next"
 }

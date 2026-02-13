@@ -1,0 +1,9 @@
+{
+  "name": "grantmatcher-ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "cd grantmatcher-web && npm run build",
+    "start": "cd grantmatcher-web && npm start"
+  }
+}
