@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: grantmatcher-api
+    runtime: docker
+    dockerfilePath: ./grantmatcher-api/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromSecret: database-url
+      - key: SECRET_KEY
+        fromSecret: secret-key
+    healthCheckPath: /docs
