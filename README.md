@@ -21,46 +21,47 @@ AI-powered grant matching for nonprofits and researchers. This is a complete, fu
 - Sentence-transformers for embeddings
 - JWT authentication with NextAuth.js
 
-## Quick Deployment (3 Steps)
+## Quick FREE Deployment (3 Steps)
 
-### 1. Set up Backend (Railway)
+### 1. Set up Database (Neon - FREE)
+1. Go to [neon.tech](https://neon.tech) → Create account
+2. Create a new project → Copy connection string
+3. Example: `postgresql://username:password@ep-xxx.us-east-1.aws.neon.tech/dbname`
 
-1. Go to [Railway.app](https://railway.app) and create account
-2. Connect your GitHub repository
-3. Set environment variables:
+### 2. Set up Backend (Render - FREE)
+1. Go to [render.com](https://render.com) → Create account
+2. **New → Web Service** → Connect GitHub → Select `grantmatcher-ai` repo → Select `grantmatcher-api` folder
+3. Set build command: `pip install -r requirements.txt`
+4. Set start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+5. Add environment variables:
    ```
-   DATABASE_URL=postgresql://... (Railway provides this)
+   DATABASE_URL=your-neon-connection-string
    SECRET_KEY=your-random-secret-key
-   FRONTEND_URL=https://your-frontend.vercel.app
+   FRONTEND_URL=https://your-app.vercel.app
    ```
-4. Deploy - Railway auto-detects Dockerfile
+6. Deploy - FREE tier available!
 
-### 2. Set up Database (Neon)
-
-1. Go to [Neon.tech](https://neon.tech) and create account
-2. Create a new project
-3. Copy the connection string to Railway environment variables
-
-### 3. Set up Frontend (Vercel)
-
-1. Go to [Vercel.com](https://vercel.com) and create account
-2. Connect your GitHub repository
-3. Set environment variables:
+### 3. Set up Frontend (Vercel - FREE)
+1. Go to [vercel.com](https://vercel.com) → Create account
+2. **New Project** → Connect GitHub → Select `grantmatcher-ai` repo → Select `grantmatcher-web` folder
+3. Add environment variables:
    ```
-   NEXT_PUBLIC_API_BASE_URL=https://your-backend.railway.app
-   NEXTAUTH_URL=https://your-frontend.vercel.app
-   NEXTAUTH_SECRET=your-random-secret
+   NEXT_PUBLIC_API_BASE_URL=https://your-render-app.onrender.com
+   NEXTAUTH_URL=https://your-app.vercel.app
+   NEXTAUTH_SECRET=your-random-secret-string
    ```
-4. Deploy - Vercel auto-detects Next.js
+4. Deploy - FREE!
 
-## Cost: $0-5/month
+## Cost Summary (FREE Tier)
 
 | Service | Cost | Purpose |
 |---------|------|---------|
 | Vercel | $0 | Frontend hosting |
-| Railway | $5 | Backend hosting |
-| Neon | $0 | PostgreSQL database |
-| Domain | $12/year | Custom domain (optional) |
+| Render | $0 | Backend hosting (free tier) |
+| Neon | $0 | PostgreSQL database (0.5GB) |
+| Qdrant | $0 | Vector database (1GB) |
+| Resend | $0 | Email service (3K/mo) |
+| **TOTAL** | **$0/month** | Use free Vercel domain |
 
 ## Local Development
 
@@ -89,7 +90,7 @@ npm run dev
 ## Architecture Overview
 
 ```
-Frontend (Vercel) ←→ Backend (Railway) ←→ Database (Neon)
+Frontend (Vercel) ←→ Backend (Render) ←→ Database (Neon)
      ↓                                        ↓
    Next.js 14                             PostgreSQL
  NextAuth.js                              SQLAlchemy
