@@ -56,7 +56,8 @@ export default function LoginPage() {
         }
       } else {
         // Register
-        const response = await fetch('http://localhost:8001/api/auth/register', {
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiBaseUrl}/api/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
