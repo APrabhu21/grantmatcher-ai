@@ -7,9 +7,12 @@ import os
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./grantmatcher.db")
 
 if DATABASE_URL.startswith("postgresql"):
-    # For Neon PostgreSQL, ensure SSL connection
+    # For Neon PostgreSQL, ensure SSL connection and use psycopg3
     if "sslmode" not in DATABASE_URL:
         DATABASE_URL += "?sslmode=require"
+    # Explicitly use psycopg3 dialect
+    if not DATABASE_URL.startswith("postgresql+psycopg"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 engine = create_engine(
     DATABASE_URL,
