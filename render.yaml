@@ -2,7 +2,7 @@ services:
   - type: web
     name: grantmatcher-api
     runtime: docker
-    dockerfilePath: ./grantmatcher-api/Dockerfile
+    rootDirectory: grantmatcher-api
     envVars:
       - key: DATABASE_URL
         fromSecret: database-url
