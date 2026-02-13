@@ -1,6 +1,6 @@
 ﻿setuptools>=65.0.0
 wheel>=0.40.0
-numpy==1.24.3
+numpy>=1.26.0
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 sqlalchemy==2.0.23
