@@ -16,7 +16,13 @@ app = FastAPI()
 # CORS middleware for production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:3000")],
+    allow_origins=[
+        "http://localhost:3000",  # Development
+        "http://localhost:3001",  # Development alternative
+        "https://grantmatcher-ai.vercel.app",  # Vercel production
+        "https://grantmatcher-ai-git-main-aprabhu21.vercel.app",  # Vercel preview
+        "*",  # Allow all origins for now (remove in production)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
