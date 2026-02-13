@@ -6,13 +6,27 @@ import os
 # Default to SQLite for development, PostgreSQL for production
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./grantmatcher.db")
 
+if DATABASE_URL.startswith("postgresql"):
+    # For Neon PostgreSQL, ensure SSL connection
+    if "sslmode" not in DATABASE_URL:
+        DATABASE_URL += "?sslmode=require"
+
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    pool_pre_ping=True,  # Verify connections before use
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base.metadata.create_all(bind=engine)
+# Create tables (only in development - in production, use Alembic migrations)
+if not DATABASE_URL.startswith("sqlite"):  # Don't auto-create in production
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Warning: Could not create tables: {e}")
+else:
+    Base.metadata.create_all(bind=engine)
 
 def get_db():
     db = SessionLocal()
