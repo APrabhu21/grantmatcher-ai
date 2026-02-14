@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 # Embedding model management
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load model on startup
-    print("Loading AI embedding model...")
-    app.state.model = SentenceTransformer("all-MiniLM-L6-v2")
-    print("AI model loaded successfully!")
+    # Load model on startup with CPU device to save memory
+    print("Loading AI embedding model (CPU-only mode)...")
+    app.state.model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+    print("AI model loaded successfully on CPU!")
     yield
     # Clean up on shutdown if needed
     del app.state.model
@@ -261,11 +261,19 @@ def get_matches(
         # Perform vector search using pre-loaded model
         model = getattr(request.app.state, 'model', None)
         search = VectorSearch(model=model)
-        results = search.search_by_text(db, query, top_k=10)
+        results = search.search_by_text(db, query, top_k=10) # returns list of (id, score)
 
-        # Format results
+        # Bulk fetch grant details for the top K results to save memory
+        grant_ids = [r[0] for r in results]
+        grants_map = {g.id: g for g in db.query(Grant).filter(Grant.id.in_(grant_ids)).all()}
+
+        # Format results in original sorted order
         matches = []
-        for grant, score in results:
+        for gid, score in results:
+            grant = grants_map.get(gid)
+            if not grant:
+                continue
+                
             matches.append({
                 "id": grant.id,
                 "title": grant.title,
@@ -281,7 +289,6 @@ def get_matches(
         return {"matches": matches}
     except Exception as e:
         logger.error(f"Error in get_matches: {e}")
-        import traceback
         traceback.print_exc()
         return JSONResponse(
             status_code=500,
