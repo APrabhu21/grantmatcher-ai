@@ -19,6 +19,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",  # Development
         "http://localhost:3001",  # Development alternative
+        "*",  # Allow all origins for now (restrict in production)
     ],
     allow_origin_regex=r"https://grantmatcher-ai.*\.vercel\.app",  # Vercel deployments
     allow_credentials=True,
@@ -70,27 +71,44 @@ class GrantApplicationUpdate(BaseModel):
 
 @app.post("/api/auth/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == user.email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    hashed_password = get_password_hash(user.password)
-    db_user = User(email=user.email, password_hash=hashed_password, display_name=user.display_name, organization_type="nonprofit_501c3", mission_statement="", focus_areas=[])
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return UserResponse(id=db_user.id, email=db_user.email, display_name=db_user.display_name)
+    try:
+        db_user = db.query(User).filter(User.email == user.email).first()
+        if db_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        hashed_password = get_password_hash(user.password)
+        db_user = User(email=user.email, password_hash=hashed_password, display_name=user.display_name, organization_type="nonprofit_501c3", mission_statement="", focus_areas=[])
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return UserResponse(id=db_user.id, email=db_user.email, display_name=db_user.display_name)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Registration error: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during registration"
+        )
 
 @app.post("/api/auth/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
+    try:
+        user = authenticate_user(db, form_data.username, form_data.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        access_token = create_access_token(data={"sub": user.email})
+        return {"access_token": access_token, "token_type": "bearer"}
+    except Exception as e:
+        print(f"Login error: {e}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during login"
         )
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/api/profile")
 def get_profile(current_user: User = Depends(get_current_user)):
