@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use as useReact } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -65,7 +65,10 @@ interface ApplicationFormData {
   internal_reference?: string | null;
 }
 
-export default function GrantDetailPage({ params }: { params: { id: string } }) {
+export default function GrantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = useReact(params);
+  const id = resolvedParams.id;
+
   const [grant, setGrant] = useState<GrantDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -83,12 +86,12 @@ export default function GrantDetailPage({ params }: { params: { id: string } }) 
     } else if (status === 'authenticated') {
       fetchGrantDetail();
     }
-  }, [status, router, params.id]);
+  }, [status, router, id]);
 
   const fetchGrantDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/grants/${params.id}`);
+      const response = await fetch(`/api/grants/${id}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -112,7 +115,7 @@ export default function GrantDetailPage({ params }: { params: { id: string } }) 
 
   const fetchApplication = async () => {
     try {
-      const response = await fetch(`/api/grants/${params.id}/application`);
+      const response = await fetch(`/api/grants/${id}/application`);
       if (response.ok) {
         const data = await response.json();
         setApplication(data.application);
@@ -127,7 +130,7 @@ export default function GrantDetailPage({ params }: { params: { id: string } }) 
       const response = await fetch('/api/saved-grants');
       if (response.ok) {
         const data = await response.json();
-        const saved = data.saved_grants.some((savedGrant: SavedGrant) => savedGrant.grant.id === params.id);
+        const saved = data.saved_grants.some((savedGrant: SavedGrant) => savedGrant.grant.id === id);
         setIsSaved(saved);
       }
     } catch (err) {
@@ -141,7 +144,7 @@ export default function GrantDetailPage({ params }: { params: { id: string } }) 
     setSaveLoading(true);
     try {
       const method = isSaved ? 'DELETE' : 'POST';
-      const response = await fetch(`/api/grants/${params.id}/save`, {
+      const response = await fetch(`/api/grants/${id}/save`, {
         method,
       });
 
@@ -161,7 +164,7 @@ export default function GrantDetailPage({ params }: { params: { id: string } }) 
     setApplicationLoading(true);
     try {
       const method = application ? 'PUT' : 'POST';
-      const response = await fetch(`/api/grants/${params.id}/application`, {
+      const response = await fetch(`/api/grants/${id}/application`, {
         method,
         headers: {
           'Content-Type': 'application/json',
