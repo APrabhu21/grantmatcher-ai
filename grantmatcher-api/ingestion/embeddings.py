@@ -41,7 +41,8 @@ class GrantEmbedder:
 
         # Get grants that don't have embeddings yet
         grants_to_embed = db.query(Grant).filter(
-            Grant.status == 'active'
+            Grant.status == 'active',
+            Grant.embedding_data == None
         ).all()
 
         logger.info(f"Found {len(grants_to_embed)} grants to embed")
@@ -67,7 +68,8 @@ class GrantEmbedder:
 
             try:
                 # Generate embeddings for batch
-                embeddings = self.model.encode(batch_texts, convert_to_numpy=True, show_progress_bar=False)
+                # FastEmbed .embed() returns a generator of numpy arrays
+                embeddings = list(self.model.embed(batch_texts))
 
                 # Update grants with embeddings
                 for j, grant in enumerate(batch):

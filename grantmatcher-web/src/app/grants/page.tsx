@@ -88,28 +88,28 @@ export default function GrantsPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading grants...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1A1A] mx-auto"></div>
+          <p className="mt-4 text-[#666666] font-inter">Loading grants...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#FDFCFB]">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="border-b border-gray-100 bg-[#FDFCFB] py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Browse Grants</h1>
-              <p className="text-sm text-gray-600">Explore all available funding opportunities</p>
+              <h1 className="text-3xl font-serif italic text-[#1A1A1A]">Browse Grants</h1>
+              <p className="text-sm text-[#666666] font-inter mt-1">Explore all available funding opportunities from the archive.</p>
             </div>
             <Link
               href="/dashboard"
-              className="text-indigo-600 hover:text-indigo-800 font-medium"
+              className="text-[#666666] hover:text-[#1A1A1A] font-medium font-inter text-sm uppercase tracking-wider"
             >
               ← Back to Dashboard
             </Link>
@@ -127,12 +127,12 @@ export default function GrantsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search grants by title, description, or agency..."
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+                className="w-full p-3 border border-gray-200 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-[#1A1A1A] placeholder-gray-400 bg-white font-inter outline-none"
               />
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700"
+              className="px-8 py-3 bg-[#1A1A1A] text-white rounded-sm font-bold uppercase tracking-widest hover:bg-black font-inter transition-colors text-xs"
             >
               Search
             </button>
@@ -141,16 +141,16 @@ export default function GrantsPage() {
 
         {/* Error */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-sm">
+            <p className="text-red-800 font-inter">{error}</p>
           </div>
         )}
 
         {/* Loading */}
         {loading && (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A1A1A] mx-auto"></div>
+            <p className="mt-4 text-[#666666] font-inter">
               {isSearching ? 'Searching grants...' : 'Loading grants...'}
             </p>
           </div>
@@ -162,47 +162,47 @@ export default function GrantsPage() {
             {grants.map((grant) => (
               <div
                 key={grant.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-sm border border-gray-100 p-6 hover:border-gray-300 transition-all duration-300 group hover:shadow-sm"
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                  <h3 className="text-xl font-serif font-medium text-[#1A1A1A] line-clamp-2 italic group-hover:text-indigo-900 transition-colors">
                     {grant.title}
                   </h3>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                <p className="text-sm text-[#666666] mb-6 line-clamp-3 font-inter leading-relaxed">
                   {grant.description}
                 </p>
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium text-gray-700">Agency:</span>
-                    <span className="text-gray-600">{grant.agency}</span>
+                <div className="space-y-3 mb-6 pt-4 border-t border-gray-50 font-inter">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-bold uppercase tracking-wider text-gray-400">Agency</span>
+                    <span className="text-[#1A1A1A] font-semibold text-right pl-4">{grant.agency}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium text-gray-700">Amount:</span>
-                    <span className="text-gray-600">{formatAmount(grant.amount_floor, grant.amount_ceiling)}</span>
+                  <div className="flex justify-between text-xs">
+                    <span className="font-bold uppercase tracking-wider text-gray-400">Amount</span>
+                    <span className="text-[#1A1A1A] font-semibold">{formatAmount(grant.amount_floor, grant.amount_ceiling)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium text-gray-700">Deadline:</span>
-                    <span className="text-gray-600">{formatDate(grant.close_date)}</span>
+                  <div className="flex justify-between text-xs">
+                    <span className="font-bold uppercase tracking-wider text-gray-400">Deadline</span>
+                    <span className="text-[#1A1A1A] font-semibold">{formatDate(grant.close_date)}</span>
                   </div>
                 </div>
 
                 {grant.focus_areas && grant.focus_areas.length > 0 && (
-                  <div className="mb-4">
+                  <div className="mb-6">
                     <div className="flex flex-wrap gap-1">
                       {grant.focus_areas.slice(0, 3).map((area, index) => (
                         <span
                           key={index}
-                          className="inline-block px-2 py-1 text-xs bg-indigo-100 text-indigo-800 rounded-full"
+                          className="inline-block px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-gray-50 text-gray-600 rounded-sm border border-gray-100"
                         >
                           {area}
                         </span>
                       ))}
                       {grant.focus_areas.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{grant.focus_areas.length - 3} more
+                        <span className="text-[10px] text-gray-400 pt-1 pl-1">
+                          +{grant.focus_areas.length - 3}
                         </span>
                       )}
                     </div>
@@ -211,7 +211,7 @@ export default function GrantsPage() {
 
                 <Link
                   href={`/grants/${grant.id}`}
-                  className="w-full block text-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                  className="w-full block text-center px-4 py-2 bg-[#1A1A1A] text-white rounded-sm text-xs font-bold uppercase tracking-[0.2em] hover:bg-black transition-colors font-inter"
                 >
                   View Details
                 </Link>
@@ -223,15 +223,13 @@ export default function GrantsPage() {
         {/* No results */}
         {!loading && !error && grants.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <div className="text-[#1A1A1A] mb-4 text-4xl">
+              ⚖️
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-xl font-serif italic text-[#1A1A1A] mb-2">
               {isSearching ? 'No grants found' : 'No grants available'}
             </h3>
-            <p className="text-gray-600">
+            <p className="text-[#666666] font-inter">
               {isSearching
                 ? 'Try adjusting your search terms or browse all grants.'
                 : 'Check back later for new funding opportunities.'
@@ -243,7 +241,7 @@ export default function GrantsPage() {
                   setSearchQuery('');
                   fetchGrants();
                 }}
-                className="mt-4 text-indigo-600 hover:text-indigo-800 font-medium"
+                className="mt-4 text-indigo-600 hover:text-indigo-800 font-medium font-inter underline decoration-indigo-200 underline-offset-4"
               >
                 Clear search
               </button>

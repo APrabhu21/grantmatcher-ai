@@ -11,6 +11,7 @@ interface GrantMatch {
   title: string;
   description: string;
   agency: string;
+  source: string;
   amount_floor?: number;
   amount_ceiling?: number;
   close_date?: string;
@@ -215,8 +216,8 @@ export default function Dashboard() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-transparent">
-        <div className="bg-white border-b border-border py-16">
+      <div className="min-h-screen bg-[#FDFCFB]">
+        <div className="border-b border-gray-100 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
               <div className="h-12 w-64 bg-slate-100 skeleton-pulse mx-auto mb-4"></div>
@@ -239,12 +240,12 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-red-600 mb-4 font-inter">{error}</p>
           <button
             onClick={() => fetchMatches()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-6 py-2 bg-[#1A1A1A] text-white rounded-sm hover:bg-black font-inter transition-colors"
           >
             Try Again
           </button>
@@ -254,13 +255,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-[#FDFCFB]">
       {/* Search Header */}
-      <div className="bg-white border-b border-border py-16">
+      <div className="border-b border-gray-100 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4 tracking-tight">Institutional Index</h1>
-            <p className="text-secondary font-sans font-medium uppercase tracking-[0.25em] text-[10px] mb-10">Grant Resource Research Archive</p>
+            <h1 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] mb-4 tracking-tight italic">Institutional Index</h1>
+            <p className="text-[#666666] font-inter font-medium uppercase tracking-[0.25em] text-[10px] mb-10">Grant Resource Research Archive</p>
 
             <form onSubmit={handleSearch} className="relative group">
               <input
@@ -268,21 +269,21 @@ export default function Dashboard() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Query entries by mission, keyword, or governing agency..."
-                className="w-full px-6 py-5 bg-white border border-slate-300 rounded-sm focus:ring-1 focus:ring-primary focus:border-primary text-primary placeholder-slate-400 font-sans transition-all duration-300 group-hover:border-slate-400 outline-none shadow-sm"
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-[#1A1A1A] placeholder-gray-400 font-inter transition-all duration-300 group-hover:border-gray-300 outline-none shadow-sm"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-3">
                 {isSearching && (
                   <button
                     type="button"
                     onClick={clearSearch}
-                    className="px-3 py-1.5 text-[10px] font-bold text-secondary hover:text-primary uppercase tracking-widest"
+                    className="px-3 py-1.5 text-[10px] font-bold text-[#666666] hover:text-[#1A1A1A] uppercase tracking-widest font-inter"
                   >
                     Reset
                   </button>
                 )}
                 <button
                   type="submit"
-                  className="bg-primary text-primary-foreground px-8 py-2.5 rounded-sm text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-colors shadow-sm"
+                  className="bg-[#1A1A1A] text-white px-8 py-2 rounded-sm text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-colors shadow-sm font-inter"
                 >
                   Search Index
                 </button>
@@ -297,39 +298,39 @@ export default function Dashboard() {
 
         {matches.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🎯</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">No matches yet</h2>
-            <p className="text-gray-600 mb-6">
+            <div className="text-6xl mb-4 text-[#1A1A1A]">🎯</div>
+            <h2 className="text-2xl font-serif italic text-[#1A1A1A] mb-2">No matches yet</h2>
+            <p className="text-[#666666] mb-6 font-inter">
               Complete your profile to get personalized grant recommendations.
             </p>
             <button
               onClick={() => router.push('/onboarding/step1')}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700"
+              className="px-6 py-2 bg-[#1A1A1A] text-white rounded-sm font-medium hover:bg-black font-inter transition-colors"
             >
               Complete Profile
             </button>
           </div>
         ) : (
           <div>
-            <div className="mb-8 flex justify-between items-end border-b border-slate-200 pb-4">
+            <div className="mb-8 flex justify-between items-end border-b border-gray-100 pb-4">
               <div>
-                <h2 className="text-2xl font-serif font-bold text-primary">
+                <h2 className="text-2xl font-serif text-[#1A1A1A] italic">
                   {isSearching ? `Index Search: "${searchQuery}"` : 'Recommended Opportunities'}
                 </h2>
-                <p className="text-secondary font-sans text-sm mt-1">
+                <p className="text-[#666666] font-inter text-sm mt-1">
                   {isSearching
                     ? `Displaying ${matches.length} entries from the archive`
                     : 'Curated based on institutional mission alignment'
                   }
                 </p>
               </div>
-              <div className="flex gap-4 items-center font-sans text-xs font-bold uppercase tracking-widest text-secondary">
+              <div className="flex gap-4 items-center font-inter text-xs font-bold uppercase tracking-widest text-[#666666]">
                 <span className="flex items-center gap-2">
-                  <Link href="/saved-grants" className="hover:text-primary transition-colors">Saved ({savedGrants.length})</Link>
+                  <Link href="/saved-grants" className="hover:text-[#1A1A1A] transition-colors">Saved ({savedGrants.length})</Link>
                 </span>
-                <span className="w-px h-4 bg-slate-300"></span>
+                <span className="w-px h-4 bg-gray-200"></span>
                 <span className="flex items-center gap-2">
-                  <Link href="/applications" className="hover:text-primary transition-colors">Tracked ({applicationsCount})</Link>
+                  <Link href="/applications" className="hover:text-[#1A1A1A] transition-colors">Tracked ({applicationsCount})</Link>
                 </span>
               </div>
             </div>
@@ -338,57 +339,62 @@ export default function Dashboard() {
               {matches.map((match, i) => (
                 <div
                   key={match.id}
-                  className="catalogue-card group flex flex-col h-full bg-white animate-stagger-fade"
+                  className="catalogue-card group flex flex-col h-full bg-white animate-stagger-fade border border-transparent hover:border-gray-100 transition-all duration-300 shadow-sm hover:shadow-md rounded-sm"
                   style={{ animationDelay: `${i * 0.05}s` }}
                 >
-                  <div className="flex-1">
+                  <div className="flex-1 p-6">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="agency-icon">
+                      <div className="agency-icon bg-gray-50 text-[#1A1A1A] font-serif font-bold text-xl w-10 h-10 flex items-center justify-center rounded-sm border border-gray-100">
                         {match.agency.charAt(0)}
                       </div>
-                      <span className={`score-badge ${match.score >= 0.8 ? 'score-high' :
-                        match.score >= 0.5 ? 'score-med' : 'score-low'
-                        }`}>
-                        Match Score: {Math.round(match.score * 100)}%
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`score-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-sm ${match.score >= 0.8 ? 'bg-[#1A1A1A] text-white' :
+                          match.score >= 0.5 ? 'bg-gray-100 text-[#1A1A1A]' : 'bg-gray-50 text-gray-400'
+                          }`}>
+                          Match Score: {Math.round(match.score * 100)}%
+                        </span>
+                        <span className="text-[9px] font-inter font-bold uppercase tracking-tighter px-1.5 py-0.5 border border-gray-100 text-gray-400 bg-gray-50 rounded-sm">
+                          {match.source}
+                        </span>
+                      </div>
                     </div>
 
-                    <h3 className="text-xl font-serif font-bold text-primary mb-2 line-clamp-2 leading-tight min-h-[3.5rem]">
+                    <h3 className="text-xl font-serif font-medium text-[#1A1A1A] mb-2 line-clamp-2 leading-tight min-h-[3.5rem] italic group-hover:text-indigo-900 transition-colors">
                       {match.title}
                     </h3>
-                    <p className="text-xs font-sans font-bold uppercase tracking-widest text-accent mb-4">
+                    <p className="text-xs font-inter font-bold uppercase tracking-widest text-[#666666] mb-4">
                       {match.agency}
                     </p>
 
-                    <p className="text-slate-600 text-sm mb-6 line-clamp-3 leading-relaxed font-sans italic">
+                    <p className="text-[#666666] text-sm mb-6 line-clamp-3 leading-relaxed font-inter">
                       {match.description}
                     </p>
 
-                    <div className="space-y-3 mb-6 pt-4 border-t border-slate-50 font-sans">
+                    <div className="space-y-3 mb-6 pt-4 border-t border-gray-50 font-inter">
                       <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
-                        <span className="text-slate-400">Appropriation:</span>
-                        <span className="text-primary">{formatAmount(match.amount_floor, match.amount_ceiling)}</span>
+                        <span className="text-gray-400">Appropriation:</span>
+                        <span className="text-[#1A1A1A]">{formatAmount(match.amount_floor, match.amount_ceiling)}</span>
                       </div>
                       <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
-                        <span className="text-slate-400">Document Deadline:</span>
-                        <span className="text-primary">{formatDate(match.close_date)}</span>
+                        <span className="text-gray-400">Document Deadline:</span>
+                        <span className="text-[#1A1A1A]">{formatDate(match.close_date)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-slate-100 mt-auto">
+                  <div className="p-6 pt-0 mt-auto">
                     <div className="flex gap-3">
                       <Link
                         href={`/grants/${match.id}`}
-                        className="flex-1 px-4 py-2 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-[0.2em] text-center block hover:bg-slate-800 transition-colors"
+                        className="flex-1 px-4 py-2 bg-[#1A1A1A] text-white text-xs font-bold uppercase tracking-[0.2em] text-center block hover:bg-black transition-colors rounded-sm font-inter"
                       >
                         Examine Entry
                       </Link>
                       <button
                         onClick={() => handleSaveToggle(match.id)}
-                        className={`px-4 py-2 border text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${isGrantSaved(match.id)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'border-slate-200 text-slate-500 hover:border-slate-400 hover:text-primary'
+                        className={`px-4 py-2 border text-[10px] font-bold uppercase tracking-widest transition-all duration-300 rounded-sm font-inter ${isGrantSaved(match.id)
+                          ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                          : 'border-gray-200 text-gray-500 hover:border-[#1A1A1A] hover:text-[#1A1A1A]'
                           }`}
                       >
                         {isGrantSaved(match.id) ? 'Saved' : 'Save'}

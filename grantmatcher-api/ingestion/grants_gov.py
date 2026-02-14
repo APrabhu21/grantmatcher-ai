@@ -32,7 +32,7 @@ class GrantsGovIngester:
         payload = {
             "keyword": "",
             "rows": rows,
-            "offset": start_record
+            "startRecordNum": start_record
         }
 
         logger.info(f"Searching opportunities: start={start_record}, rows={rows}")
@@ -201,6 +201,7 @@ class GrantsGovIngester:
             return {
                 'source': 'grants.gov',
                 'source_id': grant_id,
+                'opportunity_number': grant_id, # Cross-source identifier
                 'source_url': source_url,
                 'title': title,
                 'description': description,
@@ -226,7 +227,7 @@ class GrantsGovIngester:
             # Return None instead of raising to allow processing to continue
             return None
 
-    def ingest_grants(self, db: Session) -> Dict[str, int]:
+    def ingest_grants(self, db: Session, limit: int = 1000) -> Dict[str, int]:
         """Main ingestion method"""
         logger.info("Starting Grants.gov ingestion")
 
@@ -311,6 +312,7 @@ class GrantsGovIngester:
                             logger.info(f"Committed {stats['fetched']} grants so far")
 
                     except Exception as e:
+                        db.rollback()
                         logger.error(f"Error processing opportunity {opp.get('opportunityId')}: {e}")
                         stats['errors'] += 1
                         continue
@@ -318,8 +320,8 @@ class GrantsGovIngester:
                 start_record += rows_per_page
 
                 # Increased limit to get more grants
-                if start_record >= 1000:  # Fetch up to 1000 grants
-                    logger.info("Reached limit of 1000 records")
+                if limit > 0 and start_record >= limit:
+                    logger.info(f"Reached limit of {limit} records")
                     break
 
             # Final commit

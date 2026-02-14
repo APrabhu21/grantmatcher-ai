@@ -34,6 +34,7 @@ class Grant(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     source = Column(String(20), nullable=False)
     source_id = Column(String(100), nullable=False)
+    opportunity_number = Column(String(100), index=True) # Cross-source identifier
     source_url = Column(Text)
     title = Column(Text, nullable=False)
     description = Column(Text)

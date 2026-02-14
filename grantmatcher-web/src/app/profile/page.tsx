@@ -123,7 +123,7 @@ export default function ProfilePage() {
                                         name="display_name"
                                         value={profile?.display_name || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-inter"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-[#1A1A1A] font-inter"
                                         placeholder="e.g. Director of Development"
                                     />
                                 </div>
@@ -135,7 +135,7 @@ export default function ProfilePage() {
                                         name="organization_name"
                                         value={profile?.organization_name || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-inter"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-[#1A1A1A] font-inter"
                                     />
                                 </div>
                                 <div>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
                                         name="organization_type"
                                         value={profile?.organization_type || 'nonprofit_501c3'}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-inter"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-[#1A1A1A] font-inter"
                                     >
                                         <option value="nonprofit_501c3">Nonprofit (501c3)</option>
                                         <option value="academic">Academic Institution</option>
@@ -173,7 +173,7 @@ export default function ProfilePage() {
                                     rows={6}
                                     value={profile?.mission_statement || ''}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-inter text-sm leading-relaxed"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-[#1A1A1A] font-inter text-sm leading-relaxed"
                                     placeholder="Paste your organization's formal mission statement here. This is the primary input for semantic matching."
                                 />
                             </div>
@@ -186,7 +186,7 @@ export default function ProfilePage() {
                                         const areas = e.target.value.split(',').map(a => a.trim()).filter(a => a !== '');
                                         setProfile(prev => prev ? { ...prev, focus_areas: areas } : null);
                                     }}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-inter"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-[#1A1A1A] font-inter"
                                     placeholder="e.g. Education, Sustainability, Public Health"
                                 />
                             </div>
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                                         name="annual_budget"
                                         value={profile?.annual_budget || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-inter"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-[#1A1A1A] font-inter"
                                     >
                                         <option value="">Select Range</option>
                                         <option value="under_50k">Under $50k</option>
@@ -225,7 +225,7 @@ export default function ProfilePage() {
                                         name="employee_count"
                                         value={profile?.employee_count || ''}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-inter"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-[#1A1A1A] font-inter"
                                     >
                                         <option value="">Select Range</option>
                                         <option value="1_5">1 - 5</option>

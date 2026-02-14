@@ -186,7 +186,7 @@ h6 {
 
 /* Enhanced Elevations */
 .catalogue-card {
-  @apply bg-white border border-border p-6 transition-all duration-300;
+  @apply bg-white border border-border p-6 transition-all duration-300 rounded-sm;
 }
 
 .catalogue-card:hover {
@@ -195,7 +195,7 @@ h6 {
 }
 
 .catalogue-card .agency-icon {
-  @apply w-10 h-10 border border-slate-200 flex items-center justify-center font-serif text-slate-400 transition-colors duration-300;
+  @apply w-10 h-10 border border-slate-200 flex items-center justify-center font-serif text-slate-400 transition-colors duration-300 rounded-sm;
 }
 
 .catalogue-card:hover .agency-icon {
