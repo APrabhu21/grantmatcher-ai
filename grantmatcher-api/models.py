@@ -19,7 +19,7 @@ class User(Base):
     employee_count = Column(String(20))
     year_founded = Column(Integer)
     geographic_focus = Column(JSON, default=dict)
-    eligibility_attributes = Column(JSON, default=dict)
+    eligibility_attributes = Column(JSON, default=list)
     funding_preferences = Column(JSON, default=dict)
     email_preferences = Column(JSON, default=lambda: {"digest_enabled": True, "digest_day": "monday", "timezone": "America/New_York"})
     subscription_plan = Column(String(20), default="free")

@@ -2,7 +2,7 @@ import requests
 import json
 import logging
 from datetime import datetime, timezone
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Grant, IngestionRun
@@ -15,24 +15,24 @@ logger = logging.getLogger(__name__)
 class GrantsGovIngester:
     """Ingester for Grants.gov API"""
 
-    BASE_URL = "https://www.grants.gov/grantsws/rest/opportunities"
+    # Updated to use the new API endpoint (launched April 2025)
+    BASE_URL = "https://api.grants.gov/v1/api"
 
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'GrantMatcherAI/1.0',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
         })
 
     def search_opportunities(self, start_record: int = 0, rows: int = 100) -> Dict[str, Any]:
-        """Search for posted opportunities"""
-        url = f"{self.BASE_URL}/search/"
+        """Search for posted opportunities using the new v1 API"""
+        url = f"{self.BASE_URL}/search2"
         payload = {
             "keyword": "",
-            "oppStatus": "posted",
-            "sortBy": "openDate|desc",
             "rows": rows,
-            "startRecordNum": start_record
+            "offset": start_record
         }
 
         logger.info(f"Searching opportunities: start={start_record}, rows={rows}")
@@ -44,9 +44,9 @@ class GrantsGovIngester:
         return response.json()
 
     def get_opportunity_details(self, opportunity_id: str) -> Dict[str, Any]:
-        """Get detailed information for a specific opportunity"""
-        url = f"{self.BASE_URL}/details"
-        params = {"oppId": opportunity_id}
+        """Get detailed information for a specific opportunity using the new v1 API"""
+        url = f"{self.BASE_URL}/fetchOpportunity"
+        params = {"oppNum": opportunity_id}
 
         logger.info(f"Fetching details for opportunity: {opportunity_id}")
         response = self.session.get(url, params=params)
@@ -56,12 +56,38 @@ class GrantsGovIngester:
 
         return response.json()
 
-    def normalize_grant_data(self, opp_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalize Grants.gov data to our unified grant schema"""
+    def _parse_date(self, date_str: str) -> Optional[datetime]:
+        """Helper to parse dates in various formats returned by Grants.gov"""
+        if not date_str or not isinstance(date_str, str):
+            return None
+        
+        # Try ISO format first (standard for new API)
         try:
-            # Extract basic information
-            grant_id = opp_data.get('opportunityId', '')
-            title = opp_data.get('opportunityTitle', '').strip()
+            return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        except:
+            pass
+            
+        # Try MM/DD/YYYY (common in some Grants.gov responses)
+        try:
+            return datetime.strptime(date_str, '%m/%d/%Y')
+        except:
+            pass
+            
+        # Try YYYY-MM-DD
+        try:
+            return datetime.strptime(date_str, '%Y-%m-%d')
+        except:
+            pass
+            
+        return None
+
+    def normalize_grant_data(self, opp_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Normalize Grants.gov data to our unified grant schema (works with both old and new API)"""
+        try:
+            # Extract basic information - handle both old and new API formats
+            grant_id = opp_data.get('number') or opp_data.get('opportunityId', '')
+            title = opp_data.get('title') or opp_data.get('opportunityTitle', '')
+            title = title.strip() if title else ''
             description = opp_data.get('description', '').strip()
 
             # Extract dates
@@ -73,18 +99,16 @@ class GrantsGovIngester:
             is_rolling = False
 
             if open_date_str:
-                try:
-                    open_date = datetime.fromisoformat(open_date_str.replace('Z', '+00:00'))
-                except:
+                open_date = self._parse_date(open_date_str)
+                if not open_date:
                     logger.warning(f"Could not parse open_date: {open_date_str}")
 
             if close_date_str:
                 if close_date_str.lower() in ['none', 'rolling', 'multiple']:
                     is_rolling = True
                 else:
-                    try:
-                        close_date = datetime.fromisoformat(close_date_str.replace('Z', '+00:00'))
-                    except:
+                    close_date = self._parse_date(close_date_str)
+                    if not close_date:
                         logger.warning(f"Could not parse close_date: {close_date_str}")
 
             # Extract amounts
@@ -106,24 +130,37 @@ class GrantsGovIngester:
                 except:
                     pass
 
-            # Extract agency information
-            agency = opp_data.get('agencyName', '')
+            # Extract agency information - handle both formats
+            agency = opp_data.get('agency') or opp_data.get('agencyName', '')
             agency_code = opp_data.get('agencyCode', '')
 
-            # Extract eligibility information
+            # Extract eligibility information - handle both string and list formats
             eligible_applicant_types = []
-            if opp_data.get('applicantTypes'):
-                eligible_applicant_types = opp_data['applicantTypes']
+            applicant_types = opp_data.get('applicantTypes')
+            if applicant_types:
+                if isinstance(applicant_types, list):
+                    eligible_applicant_types = applicant_types
+                elif isinstance(applicant_types, str):
+                    # Split comma-separated string
+                    eligible_applicant_types = [t.strip() for t in applicant_types.split(',') if t.strip()]
 
-            # Extract CFDA numbers
+            # Extract CFDA numbers - handle both string and list formats
             cfda_numbers = []
-            if opp_data.get('cfdaList'):
-                cfda_numbers = [cfda.get('cfdaNumber', '') for cfda in opp_data['cfdaList'] if cfda.get('cfdaNumber')]
+            cfda_list = opp_data.get('cfdaList')
+            if cfda_list:
+                if isinstance(cfda_list, list):
+                    cfda_numbers = [cfda.get('cfdaNumber', '') for cfda in cfda_list if isinstance(cfda, dict) and cfda.get('cfdaNumber')]
+                elif isinstance(cfda_list, str):
+                    cfda_numbers = [cfda_list.strip()] if cfda_list.strip() else []
 
-            # Extract categories
+            # Extract categories - handle both string and list formats
             eligible_categories = []
-            if opp_data.get('categoryOfFundingActivity'):
-                eligible_categories = opp_data['categoryOfFundingActivity']
+            categories = opp_data.get('categoryOfFundingActivity')
+            if categories:
+                if isinstance(categories, list):
+                    eligible_categories = categories
+                elif isinstance(categories, str):
+                    eligible_categories = [c.strip() for c in categories.split(',') if c.strip()]
 
             # Create source URL
             source_url = f"https://www.grants.gov/search-results-detail/{grant_id}"
@@ -152,8 +189,9 @@ class GrantsGovIngester:
             }
 
         except Exception as e:
-            logger.error(f"Error normalizing grant data: {e}")
-            raise
+            logger.error(f"Error normalizing grant data for {opp_data.get('number') or opp_data.get('opportunityId', 'unknown')}: {e}")
+            # Return None instead of raising to allow processing to continue
+            return None
 
     def ingest_grants(self, db: Session) -> Dict[str, int]:
         """Main ingestion method"""
@@ -186,7 +224,8 @@ class GrantsGovIngester:
                 # Search for opportunities
                 search_result = self.search_opportunities(start_record, rows_per_page)
 
-                opportunities = search_result.get('opportunities', [])
+                # New API returns data in 'data' -> 'oppHits' format
+                opportunities = search_result.get('data', {}).get('oppHits', [])
                 if not opportunities:
                     has_more = False
                     break
@@ -196,7 +235,8 @@ class GrantsGovIngester:
                 for opp in opportunities:
                     try:
                         stats['fetched'] += 1
-                        opp_id = opp.get('opportunityId')
+                        # New API uses 'number' instead of 'opportunityId'
+                        opp_id = opp.get('number') or opp.get('opportunityId')
 
                         if not opp_id:
                             continue
@@ -207,9 +247,13 @@ class GrantsGovIngester:
                             Grant.source_id == opp_id
                         ).first()
 
-                        # Get detailed information
-                        details = self.get_opportunity_details(opp_id)
-                        normalized_data = self.normalize_grant_data(details)
+                        # Use search result data directly (no detail fetch needed)
+                        normalized_data = self.normalize_grant_data(opp)
+                        
+                        # Skip if normalization failed
+                        if not normalized_data:
+                            stats['errors'] += 1
+                            continue
 
                         if existing_grant:
                             # Update existing grant
@@ -236,9 +280,9 @@ class GrantsGovIngester:
 
                 start_record += rows_per_page
 
-                # Safety limit for development
-                if start_record >= 500:  # Limit to first 500 for testing
-                    logger.info("Reached development limit of 500 records")
+                # Increased limit to get more grants
+                if start_record >= 1000:  # Fetch up to 1000 grants
+                    logger.info("Reached limit of 1000 records")
                     break
 
             # Final commit

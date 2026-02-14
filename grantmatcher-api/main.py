@@ -37,17 +37,19 @@ class UserResponse(BaseModel):
     email: str
     display_name: str
 
+from typing import List, Dict, Optional
+
 class ProfileUpdate(BaseModel):
-    display_name: str = None
-    organization_name: str = None
-    organization_type: str = None
-    mission_statement: str = None
-    focus_areas: list = None
-    annual_budget: str = None
-    employee_count: str = None
-    geographic_focus: dict = None
-    eligibility_attributes: dict = None
-    funding_preferences: dict = None
+    display_name: Optional[str] = None
+    organization_name: Optional[str] = None
+    organization_type: Optional[str] = None
+    mission_statement: Optional[str] = None
+    focus_areas: Optional[List] = None
+    annual_budget: Optional[str] = None
+    employee_count: Optional[str] = None
+    geographic_focus: Optional[Dict] = None
+    eligibility_attributes: Optional[List] = None  # Changed from dict to list
+    funding_preferences: Optional[Dict] = None
 
 class GrantApplicationCreate(BaseModel):
     status: str = "interested"
