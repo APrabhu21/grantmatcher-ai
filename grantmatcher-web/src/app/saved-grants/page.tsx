@@ -157,7 +157,7 @@ export default function SavedGrantsPage() {
           <div>
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900">Your Saved Grants</h2>
-              <p className="text-gray-600">Grants you've bookmarked for later</p>
+              <p className="text-gray-600">Grants you&apos;ve bookmarked for later</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

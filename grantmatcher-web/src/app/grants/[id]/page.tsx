@@ -45,6 +45,26 @@ interface GrantApplication {
   updated_at?: string;
 }
 
+interface SavedGrant {
+  id: string;
+  grant: GrantDetail;
+  notes?: string;
+  remind_days_before: number;
+  reminder_sent: boolean;
+  created_at: string;
+}
+
+interface ApplicationFormData {
+  status: string;
+  applied_date?: string;
+  submitted_date?: string;
+  decision_date?: string;
+  amount_requested?: number;
+  amount_awarded?: number;
+  notes?: string;
+  internal_reference?: string;
+}
+
 export default function GrantDetailPage({ params }: { params: { id: string } }) {
   const [grant, setGrant] = useState<GrantDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -107,7 +127,7 @@ export default function GrantDetailPage({ params }: { params: { id: string } }) 
       const response = await fetch('/api/saved-grants');
       if (response.ok) {
         const data = await response.json();
-        const saved = data.saved_grants.some((savedGrant: any) => savedGrant.grant.id === params.id);
+        const saved = data.saved_grants.some((savedGrant: SavedGrant) => savedGrant.grant.id === params.id);
         setIsSaved(saved);
       }
     } catch (err) {
@@ -137,7 +157,7 @@ export default function GrantDetailPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const handleApplicationSubmit = async (applicationData: any) => {
+  const handleApplicationSubmit = async (applicationData: ApplicationFormData) => {
     setApplicationLoading(true);
     try {
       const method = application ? 'PUT' : 'POST';
@@ -511,7 +531,7 @@ function ApplicationFormModal({
   loading
 }: {
   application: GrantApplication | null;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ApplicationFormData) => void;
   onClose: () => void;
   loading: boolean;
 }) {

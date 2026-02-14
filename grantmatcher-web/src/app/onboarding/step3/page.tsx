@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingLayout from '@/components/OnboardingLayout';
 
@@ -36,18 +36,14 @@ const predefinedFocusAreas = [
 ];
 
 export default function OnboardingStep3() {
-  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>(() => {
+    // Load from localStorage if available
+    const saved = localStorage.getItem('onboarding_focus_areas');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [customArea, setCustomArea] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    // Load from localStorage if available
-    const saved = localStorage.getItem('onboarding_focus_areas');
-    if (saved) {
-      setSelectedAreas(JSON.parse(saved));
-    }
-  }, []);
 
   const filteredAreas = predefinedFocusAreas.filter(area =>
     area.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -147,7 +143,7 @@ export default function OnboardingStep3() {
             ))}
           </div>
           {filteredAreas.length === 0 && searchTerm && (
-            <p className="text-gray-500 text-center py-4">No areas found matching "{searchTerm}"</p>
+            <p className="text-gray-500 text-center py-4">No areas found matching &quot;{searchTerm}&quot;</p>
           )}
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
@@ -20,7 +20,7 @@ export default function OnboardingLayout({
   subtitle
 }: OnboardingLayoutProps) {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
 
   useEffect(() => {
     if (status === 'unauthenticated') {

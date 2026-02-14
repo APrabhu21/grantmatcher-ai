@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingLayout from '@/components/OnboardingLayout';
 
@@ -45,16 +45,12 @@ const eligibilityOptions = [
 ];
 
 export default function OnboardingStep4() {
-  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([]);
-  const router = useRouter();
-
-  useEffect(() => {
+  const [selectedAttributes, setSelectedAttributes] = useState<string[]>(() => {
     // Load from localStorage if available
     const saved = localStorage.getItem('onboarding_eligibility_attributes');
-    if (saved) {
-      setSelectedAttributes(JSON.parse(saved));
-    }
-  }, []);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const router = useRouter();
 
   const toggleAttribute = (attributeId: string) => {
     setSelectedAttributes(prev =>
@@ -78,7 +74,7 @@ export default function OnboardingStep4() {
       currentStep={4}
       totalSteps={5}
       title="Eligibility & Organization Details"
-      subtitle="Select all that apply to help us find grants you're eligible for."
+      subtitle="Select all that apply to help us find grants you&apos;re eligible for."
     >
       <div className="space-y-8">
         {eligibilityOptions.map((category) => (
@@ -106,8 +102,8 @@ export default function OnboardingStep4() {
         <div className="bg-green-50 p-4 rounded-lg">
           <h4 className="text-sm font-medium text-green-900 mb-2">💡 Why this matters:</h4>
           <p className="text-sm text-green-800">
-            Many grants have specific eligibility requirements. By knowing your organization's characteristics,
-            we can filter out ineligible opportunities and highlight those you're most likely to qualify for.
+            Many grants have specific eligibility requirements. By knowing your organization&apos;s characteristics,
+            we can filter out ineligible opportunities and highlight those you&apos;re most likely to qualify for.
           </p>
         </div>
       </div>

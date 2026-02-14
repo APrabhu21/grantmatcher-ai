@@ -1,20 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingLayout from '@/components/OnboardingLayout';
 
 export default function OnboardingStep2() {
-  const [missionStatement, setMissionStatement] = useState('');
-  const router = useRouter();
-
-  useEffect(() => {
+  const [missionStatement, setMissionStatement] = useState(() => {
     // Load from localStorage if available
-    const saved = localStorage.getItem('onboarding_mission_statement');
-    if (saved) {
-      setMissionStatement(saved);
-    }
-  }, []);
+    return localStorage.getItem('onboarding_mission_statement') || '';
+  });
+  const router = useRouter();
 
   const handleNext = () => {
     if (missionStatement.trim().length >= 50) {

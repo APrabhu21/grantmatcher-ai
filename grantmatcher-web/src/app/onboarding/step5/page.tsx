@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingLayout from '@/components/OnboardingLayout';
 
@@ -19,22 +19,16 @@ const deadlinePreferences = [
 ];
 
 export default function OnboardingStep5() {
-  const [selectedAmounts, setSelectedAmounts] = useState<string[]>([]);
-  const [selectedDeadline, setSelectedDeadline] = useState('');
-  const router = useRouter();
-
-  useEffect(() => {
+  const [selectedAmounts, setSelectedAmounts] = useState<string[]>(() => {
     // Load from localStorage if available
-    const savedAmounts = localStorage.getItem('onboarding_funding_amounts');
-    const savedDeadline = localStorage.getItem('onboarding_funding_deadline');
-
-    if (savedAmounts) {
-      setSelectedAmounts(JSON.parse(savedAmounts));
-    }
-    if (savedDeadline) {
-      setSelectedDeadline(savedDeadline);
-    }
-  }, []);
+    const saved = localStorage.getItem('onboarding_funding_amounts');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectedDeadline, setSelectedDeadline] = useState(() => {
+    // Load from localStorage if available
+    return localStorage.getItem('onboarding_funding_deadline') || '';
+  });
+  const router = useRouter();
 
   const toggleAmount = (amountId: string) => {
     setSelectedAmounts(prev =>
@@ -159,9 +153,9 @@ export default function OnboardingStep5() {
         </div>
 
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">🎯 You're almost done!</h4>
+          <h4 className="text-sm font-medium text-blue-900 mb-2">🎯 You&apos;re almost done!</h4>
           <p className="text-sm text-blue-800">
-            Based on your answers, we'll show you personalized grant matches ranked by relevance.
+            Based on your answers, we&apos;ll show you personalized grant matches ranked by relevance.
             You can always update your preferences later.
           </p>
         </div>

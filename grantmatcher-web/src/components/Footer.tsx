@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
@@ -37,9 +39,9 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="/grants" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/grants" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Browse Grants
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">

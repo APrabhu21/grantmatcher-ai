@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function Home() {
             </h1>
 
             <p className="text-xl sm:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              GrantMatcherAI uses advanced AI to match nonprofits, researchers, and startups with federal grants they're eligible for. Describe your work, get personalized matches in minutes.
+              GrantMatcherAI uses advanced AI to match nonprofits, researchers, and startups with federal grants they&apos;re eligible for. Describe your work, get personalized matches in minutes.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -114,7 +114,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">1. Describe Your Work</h3>
               <p className="text-gray-600 text-lg leading-relaxed">
-                Tell us about your organization's mission, focus areas, target population, and what you do. The more detail, the better our AI can match you.
+                Tell us about your organization&apos;s mission, focus areas, target population, and what you do. The more detail, the better our AI can match you.
               </p>
             </div>
 

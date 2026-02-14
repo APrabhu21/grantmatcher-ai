@@ -64,7 +64,7 @@ export default function LoginPage() {
           setError(data.detail || 'Registration failed');
         }
       }
-    } catch (err) {
+    } catch (_err) {
       setError('An error occurred');
     } finally {
       setLoading(false);
