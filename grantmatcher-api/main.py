@@ -10,6 +10,8 @@ import logging
 import traceback
 import os
 from datetime import datetime, timezone
+import gc
+import torch
 from sentence_transformers import SentenceTransformer
 
 from database import get_db
@@ -24,13 +26,31 @@ logger = logging.getLogger(__name__)
 # Embedding model management
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load model on startup with CPU device to save memory
+    # Optimize Torch for memory-constrained environments
+    print("Optimizing Torch for low-memory environment...")
+    torch.set_num_threads(1)
+    torch.set_grad_enabled(False)
+    
+    # OS level thread limits to save memory
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+
+    # Load model on startup with CPU device
     print("Loading AI embedding model (CPU-only mode)...")
-    app.state.model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
-    print("AI model loaded successfully on CPU!")
+    try:
+        app.state.model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+        print("AI model loaded successfully on CPU!")
+        
+        # Force garbage collection after loading large model
+        gc.collect()
+    except Exception as e:
+        print(f"FAILED to load model: {e}")
+        app.state.model = None
+
     yield
-    # Clean up on shutdown if needed
-    del app.state.model
+    # Clean up on shutdown
+    app.state.model = None
+    gc.collect()
 
 app = FastAPI(lifespan=lifespan)
 

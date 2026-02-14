@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Grant
 import numpy as np
+import os
+import torch
+import gc
 from typing import Dict
 
 # Configure logging
@@ -14,8 +17,16 @@ class GrantEmbedder:
     """Generate embeddings for grant descriptions"""
 
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        logger.info(f"Loading embedding model: {model_name}")
-        self.model = SentenceTransformer(model_name)
+        logger.info(f"Loading embedding model: {model_name} (CPU mode)")
+        
+        # Optimize Torch for memory
+        torch.set_num_threads(1)
+        torch.set_grad_enabled(False)
+        os.environ["OMP_NUM_THREADS"] = "1"
+        os.environ["MKL_NUM_THREADS"] = "1"
+        
+        self.model = SentenceTransformer(model_name, device="cpu")
+        gc.collect()
         self.model_name = model_name
 
     def generate_grant_embedding(self, grant: Grant) -> np.ndarray:
@@ -89,6 +100,7 @@ class GrantEmbedder:
 
                 # Commit batch
                 db.commit()
+                gc.collect() # Clean up after each batch
                 stats['processed'] += len(batch)
                 logger.info(f"Processed batch {i//batch_size + 1}, total processed: {stats['processed']}")
 

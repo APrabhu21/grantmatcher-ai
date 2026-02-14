@@ -4,6 +4,9 @@ from typing import List, Tuple, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Grant
+import os
+import torch
+import gc
 from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
@@ -15,8 +18,15 @@ class VectorSearch:
         if model:
             self.model = model
         else:
-            logger.info(f"Loading embedding model: {model_name}")
-            self.model = SentenceTransformer(model_name)
+            logger.info(f"Loading embedding model: {model_name} (CPU mode)")
+            # Optimize Torch for memory
+            torch.set_num_threads(1)
+            torch.set_grad_enabled(False)
+            os.environ["OMP_NUM_THREADS"] = "1"
+            os.environ["MKL_NUM_THREADS"] = "1"
+            
+            self.model = SentenceTransformer(model_name, device="cpu")
+            gc.collect()
         self.model_name = model_name
 
     def encode_query(self, query: str) -> np.ndarray:
