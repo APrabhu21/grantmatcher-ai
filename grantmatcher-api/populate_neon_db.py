@@ -6,15 +6,10 @@ This script fetches real grants from Grants.gov API and generates embeddings.
 
 import os
 import sys
-import torch
 import gc
 
-# Optimize Torch for memory-constrained environments
+# Memory optimizations
 print("Configuring memory optimizations...")
-torch.set_num_threads(1)
-torch.set_grad_enabled(False)
-os.environ["OMP_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"] = "1"
 
 # ============================================================================
 # OPTION 1: Set your Neon connection string directly here (easier for Windows)

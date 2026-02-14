@@ -5,14 +5,11 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from pydantic import BaseModel
-import contextlib
-import logging
-import traceback
-import os
-from datetime import datetime, timezone
 import gc
-import torch
-from sentence_transformers import SentenceTransformer
+import logging
+from datetime import datetime, timezone
+import contextlib
+from fastembed import TextEmbedding
 
 from database import get_db
 from models import User, Grant, IngestionRun, TrackedGrant, GrantApplication, MatchFeedback
@@ -26,25 +23,17 @@ logger = logging.getLogger(__name__)
 # Embedding model management
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Optimize Torch for memory-constrained environments
-    print("Optimizing Torch for low-memory environment...")
-    torch.set_num_threads(1)
-    torch.set_grad_enabled(False)
-    
-    # OS level thread limits to save memory
-    os.environ["OMP_NUM_THREADS"] = "1"
-    os.environ["MKL_NUM_THREADS"] = "1"
-
-    # Load model on startup with CPU device
-    print("Loading AI embedding model (CPU-only mode)...")
+    # Load model on startup using fastembed (Torch-free, low memory)
+    logger.info("Loading AI embedding model (FastEmbed/ONNX mode)...")
     try:
-        app.state.model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
-        print("AI model loaded successfully on CPU!")
+        # BAAI/bge-small-en-v1.5 is extremely small and accurate (~130MB total RAM)
+        app.state.model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        logger.info("AI model loaded successfully using FastEmbed!")
         
-        # Force garbage collection after loading large model
+        # Force garbage collection
         gc.collect()
     except Exception as e:
-        print(f"FAILED to load model: {e}")
+        logger.error(f"FAILED to load model: {e}")
         app.state.model = None
 
     yield

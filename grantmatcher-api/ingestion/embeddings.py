@@ -1,12 +1,11 @@
 import logging
-from sentence_transformers import SentenceTransformer
+import gc
+from fastembed import TextEmbedding
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Grant
 import numpy as np
 import os
-import torch
-import gc
 from typing import Dict
 
 # Configure logging
@@ -16,16 +15,9 @@ logger = logging.getLogger(__name__)
 class GrantEmbedder:
     """Generate embeddings for grant descriptions"""
 
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        logger.info(f"Loading embedding model: {model_name} (CPU mode)")
-        
-        # Optimize Torch for memory
-        torch.set_num_threads(1)
-        torch.set_grad_enabled(False)
-        os.environ["OMP_NUM_THREADS"] = "1"
-        os.environ["MKL_NUM_THREADS"] = "1"
-        
-        self.model = SentenceTransformer(model_name, device="cpu")
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5"):
+        logger.info(f"Loading embedding model: {model_name} (FastEmbed mode)")
+        self.model = TextEmbedding(model_name=model_name)
         gc.collect()
         self.model_name = model_name
 
@@ -40,8 +32,8 @@ class GrantEmbedder:
             text += f" {focus_text}"
 
         # Generate embedding
-        embedding = self.model.encode(text, convert_to_numpy=True)
-        return embedding
+        embeddings = list(self.model.embed([text]))
+        return np.array(embeddings[0])
 
     def embed_all_grants(self, db: Session, batch_size: int = 10) -> Dict[str, int]:
         """Generate embeddings for all grants without embeddings"""

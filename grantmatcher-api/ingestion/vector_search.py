@@ -5,33 +5,28 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Grant
 import os
-import torch
 import gc
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
 logger = logging.getLogger(__name__)
 
 class VectorSearch:
     """Simple vector search implementation using cosine similarity"""
 
-    def __init__(self, model: Optional[SentenceTransformer] = None, model_name: str = "all-MiniLM-L6-v2"):
+    def __init__(self, model: Optional[TextEmbedding] = None, model_name: str = "BAAI/bge-small-en-v1.5"):
         if model:
             self.model = model
         else:
-            logger.info(f"Loading embedding model: {model_name} (CPU mode)")
-            # Optimize Torch for memory
-            torch.set_num_threads(1)
-            torch.set_grad_enabled(False)
-            os.environ["OMP_NUM_THREADS"] = "1"
-            os.environ["MKL_NUM_THREADS"] = "1"
-            
-            self.model = SentenceTransformer(model_name, device="cpu")
+            logger.info(f"Loading embedding model: {model_name} (FastEmbed mode)")
+            self.model = TextEmbedding(model_name=model_name)
             gc.collect()
         self.model_name = model_name
 
     def encode_query(self, query: str) -> np.ndarray:
         """Encode a search query into an embedding"""
-        return self.model.encode(query, convert_to_numpy=True)
+        # fastembed.embed returns a generator, we take the first result
+        embeddings = list(self.model.embed([query]))
+        return np.array(embeddings[0])
 
     def cosine_similarity(self, a: np.ndarray, b: np.ndarray) -> float:
         """Calculate cosine similarity between two vectors with safety check"""
