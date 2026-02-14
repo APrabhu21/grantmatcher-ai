@@ -9,15 +9,18 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">GM</span>
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-primary rounded-sm flex items-center justify-center">
+              <span className="text-primary-foreground font-serif font-bold text-lg">G</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">GrantMatcherAI</span>
+            <div>
+              <span className="text-xl font-serif font-bold text-primary block leading-none">GrantMatcher</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-secondary font-sans font-semibold">Digital Archive</span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -26,26 +29,26 @@ export default function Header() {
               <>
                 <Link
                   href="/dashboard"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  className="text-secondary hover:text-primary font-sans text-sm font-semibold uppercase tracking-wider transition-colors"
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/grants"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  className="text-secondary hover:text-primary font-sans text-sm font-semibold uppercase tracking-wider transition-colors"
                 >
-                  Browse Grants
+                  Catalog
                 </Link>
                 <Link
                   href="/applications"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  className="text-secondary hover:text-primary font-sans text-sm font-semibold uppercase tracking-wider transition-colors"
                 >
                   Applications
                 </Link>
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium"
+                    className="flex items-center space-x-2 text-primary font-sans text-sm font-bold uppercase tracking-wider hover:opacity-80 transition-opacity"
                   >
                     <span>{session.user?.name || session.user?.email}</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,18 +79,18 @@ export default function Header() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6">
                 <Link
                   href="/login"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  className="text-secondary hover:text-primary font-sans text-sm font-semibold uppercase tracking-wider transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/login"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="bg-primary text-primary-foreground px-6 py-2.5 rounded-sm hover:opacity-90 transition-opacity font-sans text-sm font-bold uppercase tracking-widest"
                 >
-                  Get Started
+                  Access Archive
                 </Link>
               </div>
             )}

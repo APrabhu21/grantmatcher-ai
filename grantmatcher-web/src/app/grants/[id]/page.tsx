@@ -235,293 +235,207 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
   if (!grant) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div>
-              <Link href="/dashboard" className="text-indigo-600 hover:text-indigo-800 text-sm">
-                ← Back to Dashboard
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900 mt-1">GrantMatcherAI</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {session?.user?.name || 'User'}</span>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-transparent">
+      {/* Breadcrumbs */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 text-[10px] font-sans font-bold uppercase tracking-[0.2em]">
+        <Link href="/dashboard" className="text-secondary hover:text-primary transition-colors flex items-center gap-2">
+          ← Return to Catalogue
+        </Link>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {/* Grant Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-8 text-white">
-            <div className="flex items-start justify-between">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white border border-border overflow-hidden p-8 md:p-16 shadow-lg relative">
+          {/* Watermark/Seal */}
+          <div className="absolute top-8 right-8 w-24 h-24 border-4 border-slate-50 rounded-full flex items-center justify-center opacity-40 pointer-events-none">
+            <span className="text-[10px] font-serif font-bold text-slate-300 text-center uppercase tracking-widest leading-tight">Institutional<br />Archive</span>
+          </div>
+
+          {/* Document Header */}
+          <div className="border-b-2 border-primary pb-12 mb-12">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-8">
               <div className="flex-1">
-                <h1 className="text-3xl font-bold mb-2">{grant.title}</h1>
-                <p className="text-indigo-100 text-lg">{grant.agency}</p>
-                {grant.program_name && (
-                  <p className="text-indigo-200 mt-1">{grant.program_name}</p>
-                )}
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-[10px] font-sans font-bold uppercase tracking-[0.3em] text-accent px-3 py-1 border border-accent/20">
+                    Official Record
+                  </span>
+                  <span className="text-[10px] font-sans font-bold uppercase tracking-[0.3em] text-secondary">
+                    Indexing Source: {grant.source}
+                  </span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-6 leading-tight">
+                  {grant.title}
+                </h1>
+                <div className="space-y-1">
+                  <p className="text-xl font-serif italic text-secondary">{grant.agency}</p>
+                  {grant.program_name && (
+                    <p className="text-sm font-sans font-semibold uppercase tracking-wider text-slate-500">{grant.program_name}</p>
+                  )}
+                </div>
               </div>
-              <div className="ml-6">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  grant.status === 'active'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {grant.status}
+              <div className="flex flex-col items-end gap-3 font-sans">
+                <span className={`inline-flex items-center px-4 py-1 text-[10px] font-bold uppercase tracking-widest ${grant.status === 'active'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-slate-100 text-slate-600'
+                  }`}>
+                  Status: {grant.status}
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Archive ID: {grant.source_id}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Grant Content */}
-          <div className="px-6 py-8">
-            {/* Key Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Funding Information</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Amount:</span>
-                    <span className="font-medium">{formatAmount(grant.amount_floor, grant.amount_ceiling)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Open Date:</span>
-                    <span className="font-medium">{formatDate(grant.open_date)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Close Date:</span>
-                    <span className="font-medium">
-                      {grant.is_rolling ? 'Rolling deadline' : formatDate(grant.close_date)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Geographic Scope:</span>
-                    <span className="font-medium capitalize">{grant.geographic_scope || 'National'}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Program Details</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Source:</span>
-                    <span className="font-medium capitalize">{grant.source}</span>
-                  </div>
-                  {grant.agency_code && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Agency Code:</span>
-                      <span className="font-medium">{grant.agency_code}</span>
-                    </div>
-                  )}
-                  {grant.cfda_numbers && grant.cfda_numbers.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">CFDA Numbers:</span>
-                      <span className="font-medium">{grant.cfda_numbers.join(', ')}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Last Updated:</span>
-                    <span className="font-medium">{formatDate(grant.updated_at)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            {(grant.description || grant.summary) && (
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Description</h3>
-                <div className="prose prose-gray max-w-none">
-                  {grant.description && (
-                    <div className="mb-4">
-                      <p className="text-gray-700 leading-relaxed">{grant.description}</p>
-                    </div>
-                  )}
-                  {grant.summary && grant.summary !== grant.description && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-2">Summary</h4>
-                      <p className="text-gray-700">{grant.summary}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Eligibility */}
-            {(grant.eligible_applicant_types || grant.eligible_categories || grant.focus_areas) && (
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Eligibility</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {grant.eligible_applicant_types && grant.eligible_applicant_types.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Eligible Applicant Types</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {grant.eligible_applicant_types.map((type, index) => (
-                          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {type}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {grant.eligible_categories && grant.eligible_categories.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Eligible Categories</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {grant.eligible_categories.map((category, index) => (
-                          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {category}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {grant.focus_areas && grant.focus_areas.length > 0 && (
-                  <div className="mt-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Focus Areas</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {grant.focus_areas.map((area, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          {area}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Application Tracking */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Status</h3>
-              {application ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-900">Status:</span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        application.status === 'awarded' ? 'bg-green-100 text-green-800' :
-                        application.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
-                        application.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-                        application.status === 'applied' ? 'bg-purple-100 text-purple-800' :
-                        application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {application.status.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setShowApplicationForm(true)}
-                      className="text-sm text-indigo-600 hover:text-indigo-800"
-                    >
-                      Update Status
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    {application.applied_date && (
-                      <div>
-                        <span className="text-gray-600">Applied:</span>
-                        <span className="ml-2 font-medium">{formatDate(application.applied_date)}</span>
+          {/* Document Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+            <div className="lg:col-span-2 space-y-12">
+              {/* DescriptionSection */}
+              {(grant.description || grant.summary) && (
+                <section>
+                  <h3 className="text-lg font-sans font-bold uppercase tracking-widest text-primary border-b border-slate-100 pb-2 mb-6">
+                    Abstract & Specification
+                  </h3>
+                  <div className="prose prose-slate max-w-none font-serif text-lg leading-relaxed text-slate-700">
+                    {grant.description && (
+                      <div className="mb-8 first-letter:text-5xl first-letter:font-bold first-letter:text-primary first-letter:mr-3 first-letter:float-left">
+                        <p>{grant.description}</p>
                       </div>
                     )}
-                    {application.submitted_date && (
-                      <div>
-                        <span className="text-gray-600">Submitted:</span>
-                        <span className="ml-2 font-medium">{formatDate(application.submitted_date)}</span>
-                      </div>
-                    )}
-                    {application.decision_date && (
-                      <div>
-                        <span className="text-gray-600">Decision:</span>
-                        <span className="ml-2 font-medium">{formatDate(application.decision_date)}</span>
-                      </div>
-                    )}
-                    {application.amount_requested && (
-                      <div>
-                        <span className="text-gray-600">Requested:</span>
-                        <span className="ml-2 font-medium">${application.amount_requested.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {application.amount_awarded && (
-                      <div>
-                        <span className="text-gray-600">Awarded:</span>
-                        <span className="ml-2 font-medium text-green-600">${application.amount_awarded.toLocaleString()}</span>
+                    {grant.summary && grant.summary !== grant.description && (
+                      <div className="bg-slate-50 p-8 border-l-4 border-primary italic">
+                        <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-secondary mb-4 not-italic">Summary Brief</h4>
+                        <p className="text-slate-600 leading-relaxed">{grant.summary}</p>
                       </div>
                     )}
                   </div>
+                </section>
+              )}
 
-                  {application.notes && (
-                    <div className="mt-3">
-                      <span className="text-gray-600 text-sm">Notes:</span>
-                      <p className="text-sm text-gray-900 mt-1">{application.notes}</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <p className="text-gray-600 mb-4">Track your application progress for this grant</p>
-                  <button
-                    onClick={() => setShowApplicationForm(true)}
-                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
-                  >
-                    Start Tracking Application
-                  </button>
-                </div>
+              {/* EligibilitySection */}
+              {(grant.eligible_applicant_types || grant.eligible_categories || grant.focus_areas) && (
+                <section>
+                  <h3 className="text-lg font-sans font-bold uppercase tracking-widest text-primary border-b border-slate-100 pb-2 mb-6">
+                    Institutional Criteria
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {grant.eligible_applicant_types && grant.eligible_applicant_types.length > 0 && (
+                      <div>
+                        <h4 className="font-sans font-bold text-[10px] uppercase tracking-widest text-slate-400 mb-4">Eligible Entities</h4>
+                        <ul className="space-y-2">
+                          {grant.eligible_applicant_types.map((type, index) => (
+                            <li key={index} className="flex items-center gap-3 text-sm text-slate-700 font-sans">
+                              <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
+                              {type}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {grant.eligible_categories && grant.eligible_categories.length > 0 && (
+                      <div>
+                        <h4 className="font-sans font-bold text-[10px] uppercase tracking-widest text-slate-400 mb-4">Funding Categories</h4>
+                        <ul className="space-y-2">
+                          {grant.eligible_categories.map((category, index) => (
+                            <li key={index} className="flex items-center gap-3 text-sm text-slate-700 font-sans">
+                              <span className="w-1.5 h-1.5 border border-primary rounded-full"></span>
+                              {category}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </section>
               )}
             </div>
 
-            {/* Application Form Modal */}
-            {showApplicationForm && (
-              <ApplicationFormModal
-                application={application}
-                onSubmit={handleApplicationSubmit}
-                onClose={() => setShowApplicationForm(false)}
-                loading={applicationLoading}
-              />
-            )}
+            {/* Sidebar Metadata */}
+            <div className="space-y-12">
+              <section>
+                <h3 className="text-xs font-sans font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 pb-2 mb-6">
+                  Fiscal Details
+                </h3>
+                <div className="space-y-6 font-sans">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Appropriation Range</p>
+                    <p className="text-xl font-serif font-bold text-primary">{formatAmount(grant.amount_floor, grant.amount_ceiling)}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Publication</p>
+                      <p className="text-sm font-semibold text-primary">{formatDate(grant.open_date)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Filing Deadline</p>
+                      <p className="text-sm font-semibold text-accent">
+                        {grant.is_rolling ? 'Rolling' : formatDate(grant.close_date)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-            {/* Actions */}
-            <div className="border-t pt-6">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <section>
+                <h3 className="text-xs font-sans font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 pb-2 mb-6">
+                  Reference Info
+                </h3>
+                <div className="space-y-4 font-sans text-sm">
+                  {grant.agency_code && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Agency Code</span>
+                      <span className="font-semibold text-primary">{grant.agency_code}</span>
+                    </div>
+                  )}
+                  {grant.cfda_numbers && grant.cfda_numbers.length > 0 && (
+                    <div>
+                      <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-1">CFDA Index</p>
+                      <p className="font-semibold text-primary">{grant.cfda_numbers.join(', ')}</p>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Archive Updated</span>
+                    <span className="font-semibold text-primary">{formatDate(grant.updated_at)}</span>
+                  </div>
+                </div>
+              </section>
+
+              <div className="flex flex-col gap-3 pt-8">
                 {grant.source_url && (
                   <a
                     href={grant.source_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 px-6 py-3 bg-indigo-600 text-white text-center font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="bg-primary text-primary-foreground text-center py-4 text-xs font-bold uppercase tracking-[0.3em] hover:bg-slate-800 transition-colors shadow-sm"
                   >
-                    Apply for Grant
+                    Initiate Application
                   </a>
                 )}
                 <button
                   onClick={handleSaveToggle}
                   disabled={saveLoading}
-                  className={`px-6 py-3 border font-medium rounded-lg transition-colors ${
-                    isSaved
-                      ? 'border-green-300 text-green-700 bg-green-50 hover:bg-green-100'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className={`py-4 border text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-300 ${isSaved
+                    ? 'bg-slate-100 text-primary border-slate-200'
+                    : 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary'
+                    }`}
                 >
-                  {saveLoading ? 'Saving...' : (isSaved ? '✓ Saved' : 'Save for Later')}
-                </button>
-                <button className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                  Share Grant
+                  {saveLoading ? 'Processing...' : (isSaved ? 'Marked in Archive' : 'Save Reference')}
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {showApplicationForm && (
+        <ApplicationFormModal
+          application={application}
+          onSubmit={handleApplicationSubmit}
+          onClose={() => setShowApplicationForm(false)}
+          loading={applicationLoading}
+        />
+      )}
     </div>
   );
 }
@@ -570,149 +484,86 @@ function ApplicationFormModal({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {application ? 'Update Application' : 'Track Application'}
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-[100] backdrop-blur-sm">
+      <div className="bg-white rounded-none border border-slate-300 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl p-8">
+        <div className="border-b-2 border-primary pb-6 mb-8 flex justify-between items-center">
+          <h3 className="text-2xl font-serif font-bold text-primary">
+            {application ? 'Registry Update' : 'Initialize Registry Tracking'}
+          </h3>
+          <button onClick={onClose} className="text-secondary hover:text-primary p-2">✕</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status *
-              </label>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <label className="form-label">Classification</label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
+                className="form-input"
               >
-                {statusOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Internal Reference
-              </label>
+            <div className="space-y-4">
+              <label className="form-label">Internal Reference</label>
               <input
                 type="text"
                 value={formData.internal_reference}
                 onChange={(e) => setFormData({ ...formData, internal_reference: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-500"
-                placeholder="Your tracking number"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Applied Date
-              </label>
-              <input
-                type="date"
-                value={formData.applied_date}
-                onChange={(e) => setFormData({ ...formData, applied_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="form-input"
+                placeholder="PROJ-2026-X"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Submitted Date
-              </label>
-              <input
-                type="date"
-                value={formData.submitted_date}
-                onChange={(e) => setFormData({ ...formData, submitted_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Decision Date
-              </label>
-              <input
-                type="date"
-                value={formData.decision_date}
-                onChange={(e) => setFormData({ ...formData, decision_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount Requested
-              </label>
+            <div className="space-y-4">
+              <label className="form-label">Funds Requested (USD)</label>
               <input
                 type="number"
                 value={formData.amount_requested}
                 onChange={(e) => setFormData({ ...formData, amount_requested: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="50000"
+                className="form-input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount Awarded
-              </label>
+            <div className="space-y-4">
+              <label className="form-label">Decision Deadline (Anticipated)</label>
               <input
-                type="number"
-                value={formData.amount_awarded}
-                onChange={(e) => setFormData({ ...formData, amount_awarded: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="50000"
+                type="date"
+                value={formData.decision_date}
+                onChange={(e) => setFormData({ ...formData, decision_date: e.target.value })}
+                className="form-input"
               />
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes
-            </label>
+          <div className="space-y-4">
+            <label className="form-label">Researcher Notes & Context</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-500"
-              placeholder="Add any notes about your application..."
+              className="form-input min-h-[120px]"
+              placeholder="Detailed justification or strategy notes..."
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Cancel
-            </button>
+          <div className="pt-8 border-t border-slate-100 flex gap-4">
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              className="flex-1 bg-primary text-primary-foreground py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-opacity-90 transition-opacity"
             >
-              {loading ? 'Saving...' : (application ? 'Update' : 'Start Tracking')}
+              {loading ? 'Archiving...' : 'Synchronize Registry'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-8 border border-slate-200 text-secondary text-[10px] font-bold uppercase tracking-widest hover:border-primary transition-colors"
+            >
+              Cancel
             </button>
           </div>
         </form>

@@ -226,65 +226,46 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-transparent">
+      {/* Search Header */}
+      <div className="bg-white border-b border-border py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">GrantMatcherAI</h1>
-              <p className="text-sm text-gray-600">Your personalized grant matches</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/saved-grants"
-                className="text-sm text-gray-600 hover:text-indigo-600"
-              >
-                Saved Grants ({savedGrants.length})
-              </Link>
-              <Link
-                href="/applications"
-                className="text-sm text-gray-600 hover:text-indigo-600"
-              >
-                Applications ({applicationsCount})
-              </Link>
-              <span className="text-sm text-gray-600">Welcome, {session?.user?.name || 'User'}</span>
-            </div>
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4 tracking-tight">Institutional Index</h1>
+            <p className="text-secondary font-sans font-medium uppercase tracking-[0.25em] text-[10px] mb-10">Grant Resource Research Archive</p>
+
+            <form onSubmit={handleSearch} className="relative group">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Query entries by mission, keyword, or governing agency..."
+                className="w-full px-6 py-5 bg-white border border-slate-300 rounded-sm focus:ring-1 focus:ring-primary focus:border-primary text-primary placeholder-slate-400 font-sans transition-all duration-300 group-hover:border-slate-400 outline-none shadow-sm"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-3">
+                {isSearching && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="px-3 py-1.5 text-[10px] font-bold text-secondary hover:text-primary uppercase tracking-widest"
+                  >
+                    Reset
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="bg-primary text-primary-foreground px-8 py-2.5 rounded-sm text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-colors shadow-sm"
+                >
+                  Search Index
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Bar */}
-        <div className="mb-6">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="flex-1">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for grants (e.g., 'climate change', 'education', 'nonprofit')"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
-            >
-              Search
-            </button>
-            {isSearching && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-              >
-                Clear
-              </button>
-            )}
-          </form>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 
         {matches.length === 0 ? (
           <div className="text-center py-12">
@@ -302,80 +283,83 @@ export default function Dashboard() {
           </div>
         ) : (
           <div>
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {isSearching ? `Search Results for "${searchQuery}"` : 'Your Top Grant Matches'}
-              </h2>
-              <p className="text-gray-600">
-                {isSearching
-                  ? `Found ${matches.length} grants matching your search`
-                  : 'Based on your organization\'s mission and focus areas'
-                }
-              </p>
+            <div className="mb-8 flex justify-between items-end border-b border-slate-200 pb-4">
+              <div>
+                <h2 className="text-2xl font-serif font-bold text-primary">
+                  {isSearching ? `Index Search: "${searchQuery}"` : 'Recommended Opportunities'}
+                </h2>
+                <p className="text-secondary font-sans text-sm mt-1">
+                  {isSearching
+                    ? `Displaying ${matches.length} entries from the archive`
+                    : 'Curated based on institutional mission alignment'
+                  }
+                </p>
+              </div>
+              <div className="flex gap-4 items-center font-sans text-xs font-bold uppercase tracking-widest text-secondary">
+                <span className="flex items-center gap-2">
+                  <Link href="/saved-grants" className="hover:text-primary transition-colors">Saved ({savedGrants.length})</Link>
+                </span>
+                <span className="w-px h-4 bg-slate-300"></span>
+                <span className="flex items-center gap-2">
+                  <Link href="/applications" className="hover:text-primary transition-colors">Tracked ({applicationsCount})</Link>
+                </span>
+              </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {matches.map((match) => (
-                <div key={match.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
-                        {match.title}
-                      </h3>
-                      <p className="text-sm text-indigo-600 font-medium">{match.agency}</p>
-                    </div>
-                    <div className="ml-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {Math.round(match.score * 100)}% match
+                <div key={match.id} className="catalogue-card group flex flex-col h-full bg-white">
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-10 h-10 border border-slate-200 flex items-center justify-center font-serif text-slate-400 group-hover:border-primary group-hover:text-primary transition-colors">
+                        {match.agency.charAt(0)}
+                      </div>
+                      <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-slate-400 border border-slate-100 px-2 py-0.5 whitespace-nowrap">
+                        Match Score: {Math.round(match.score * 100)}%
                       </span>
                     </div>
-                  </div>
 
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {match.description}
-                  </p>
+                    <h3 className="text-xl font-serif font-bold text-primary mb-2 line-clamp-2 leading-tight min-h-[3.5rem]">
+                      {match.title}
+                    </h3>
+                    <p className="text-xs font-sans font-bold uppercase tracking-widest text-accent mb-4">
+                      {match.agency}
+                    </p>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Amount:</span>
-                      <span className="font-medium">{formatAmount(match.amount_floor, match.amount_ceiling)}</span>
+                    <p className="text-slate-600 text-sm mb-6 line-clamp-3 leading-relaxed font-sans italic">
+                      {match.description}
+                    </p>
+
+                    <div className="space-y-3 mb-6 pt-4 border-t border-slate-50 font-sans">
+                      <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
+                        <span className="text-slate-400">Appropriation:</span>
+                        <span className="text-primary">{formatAmount(match.amount_floor, match.amount_ceiling)}</span>
+                      </div>
+                      <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
+                        <span className="text-slate-400">Document Deadline:</span>
+                        <span className="text-primary">{formatDate(match.close_date)}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Deadline:</span>
-                      <span className="font-medium">{formatDate(match.close_date)}</span>
+                  </div>
+
+                  <div className="pt-6 border-t border-slate-100 mt-auto">
+                    <div className="flex gap-3">
+                      <Link
+                        href={`/grants/${match.id}`}
+                        className="flex-1 px-4 py-2 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-[0.2em] text-center block hover:bg-slate-800 transition-colors"
+                      >
+                        Examine Entry
+                      </Link>
+                      <button
+                        onClick={() => handleSaveToggle(match.id)}
+                        className={`px-4 py-2 border text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${isGrantSaved(match.id)
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'border-slate-200 text-slate-500 hover:border-slate-400 hover:text-primary'
+                          }`}
+                      >
+                        {isGrantSaved(match.id) ? 'Saved' : 'Save'}
+                      </button>
                     </div>
-                  </div>
-
-                  <p className="text-xs text-gray-500 mb-4 italic">
-                    {match.explanation}
-                  </p>
-
-                  <div className="flex gap-2 mb-4">
-                    <Link
-                      href={`/grants/${match.id}`}
-                      className="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 text-center block"
-                    >
-                      View Details
-                    </Link>
-                    <button
-                      onClick={() => handleSaveToggle(match.id)}
-                      className={`px-4 py-2 border text-sm font-medium rounded-lg transition-colors ${
-                        isGrantSaved(match.id)
-                          ? 'border-green-300 text-green-700 bg-green-50 hover:bg-green-100'
-                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {isGrantSaved(match.id) ? '✓ Saved' : 'Save'}
-                    </button>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleFeedback(match.id, 'dismissed')}
-                      className="flex-1 px-4 py-2 bg-red-50 text-red-700 border border-red-200 text-sm font-medium rounded-lg hover:bg-red-100"
-                    >
-                      Not Relevant
-                    </button>
                   </div>
                 </div>
               ))}

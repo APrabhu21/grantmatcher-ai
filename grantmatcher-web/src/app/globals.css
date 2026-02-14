@@ -1,22 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --secondary: #8b5cf6;
-  --accent: #f59e0b;
+  --background: #fdfcfb;
+  --foreground: #1c1917;
+  --primary: #0f172a;
+  --primary-foreground: #f8fafc;
+  --secondary: #44403c;
+  --muted: #f1f5f9;
+  --accent: #b45309;
+  --border: #e2e8f0;
+  --ring: #94a3b8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
-  --color-primary-dark: var(--primary-dark);
+  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
+  --color-border: var(--border);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -34,10 +39,15 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), serif;
+  letter-spacing: -0.01em;
 }
 
 /* Custom scrollbar */
@@ -60,7 +70,7 @@ body {
 
 /* Focus styles */
 .focus-ring:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -112,32 +122,32 @@ body {
 
 /* Custom button styles */
 .btn-primary {
-  @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105;
+  @apply bg-primary text-primary-foreground font-medium py-2.5 px-6 rounded-md hover:bg-slate-800 transition-all duration-200 border border-primary;
 }
 
 .btn-secondary {
-  @apply border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-200;
+  @apply border border-border text-secondary font-medium py-2.5 px-6 rounded-md hover:bg-muted transition-all duration-200;
 }
 
 /* Card styles */
 .card {
-  @apply bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden;
+  @apply bg-white rounded-lg shadow-sm border border-border overflow-hidden;
 }
 
-.card-hover {
-  @apply transition-all duration-200 hover:shadow-xl hover:-translate-y-1;
+.catalogue-card {
+  @apply bg-white border border-border p-6 transition-all duration-300 hover:border-slate-400 hover:shadow-md;
 }
 
 /* Form styles */
 .form-input {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+  @apply w-full px-4 py-2.5 border border-border rounded-md focus:ring-1 focus:ring-primary focus:border-primary transition-colors bg-white text-foreground;
 }
 
 .form-label {
-  @apply block text-sm font-medium text-gray-700 mb-2;
+  @apply block text-sm font-semibold text-slate-700 mb-1.5 uppercase tracking-wider;
 }
 
 /* Loading spinner */
 .spinner {
-  @apply animate-spin rounded-full border-2 border-gray-300 border-t-blue-600;
+  @apply animate-spin rounded-full border-2 border-slate-200 border-t-primary;
 }
