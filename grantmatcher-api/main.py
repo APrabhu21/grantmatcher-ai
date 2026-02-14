@@ -7,6 +7,8 @@ from sqlalchemy import func
 from pydantic import BaseModel
 import gc
 import logging
+import traceback
+import os
 from datetime import datetime, timezone
 import contextlib
 from fastembed import TextEmbedding

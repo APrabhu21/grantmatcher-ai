@@ -6,6 +6,7 @@ from database import get_db
 from models import Grant
 import os
 import gc
+import json
 from fastembed import TextEmbedding
 
 logger = logging.getLogger(__name__)
