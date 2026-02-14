@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Grant
@@ -11,8 +11,12 @@ logger = logging.getLogger(__name__)
 class VectorSearch:
     """Simple vector search implementation using cosine similarity"""
 
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        self.model = SentenceTransformer(model_name)
+    def __init__(self, model: Optional[SentenceTransformer] = None, model_name: str = "all-MiniLM-L6-v2"):
+        if model:
+            self.model = model
+        else:
+            logger.info(f"Loading embedding model: {model_name}")
+            self.model = SentenceTransformer(model_name)
         self.model_name = model_name
 
     def encode_query(self, query: str) -> np.ndarray:
@@ -20,8 +24,12 @@ class VectorSearch:
         return self.model.encode(query, convert_to_numpy=True)
 
     def cosine_similarity(self, a: np.ndarray, b: np.ndarray) -> float:
-        """Calculate cosine similarity between two vectors"""
-        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+        """Calculate cosine similarity between two vectors with safety check"""
+        norm_a = np.linalg.norm(a)
+        norm_b = np.linalg.norm(b)
+        if norm_a == 0 or norm_b == 0:
+            return 0.0
+        return float(np.dot(a, b) / (norm_a * norm_b))
 
     def search_grants(self, db: Session, query_embedding: np.ndarray, top_k: int = 10) -> List[Tuple[Grant, float]]:
         """Search for grants using vector similarity"""
@@ -42,7 +50,7 @@ class VectorSearch:
                 # Calculate similarity
                 similarity = self.cosine_similarity(query_embedding, grant_embedding)
 
-                results.append((grant, float(similarity)))
+                results.append((grant, similarity))
 
             except Exception as e:
                 logger.warning(f"Error processing grant {grant.id}: {e}")

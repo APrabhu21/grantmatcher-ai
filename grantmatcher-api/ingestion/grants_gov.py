@@ -111,24 +111,57 @@ class GrantsGovIngester:
                     if not close_date:
                         logger.warning(f"Could not parse close_date: {close_date_str}")
 
-            # Extract amounts
-            award_ceiling = opp_data.get('awardCeiling')
-            award_floor = opp_data.get('awardFloor')
+    def _parse_amount(self, amount_str: Any) -> Optional[int]:
+        """Helper to parse currency/amount strings into integers"""
+        if not amount_str or amount_str == '0':
+            return None
+        
+        try:
+            if isinstance(amount_str, (int, float)):
+                return int(amount_str)
+            
+            # Clean string: remove $, commas, spaces
+            clean_str = amount_str.replace('$', '').replace(',', '').strip()
+            if not clean_str:
+                return None
+                
+            return int(float(clean_str))
+        except (ValueError, TypeError):
+            return None
 
-            amount_floor = None
-            amount_ceiling = None
+    def normalize_grant_data(self, opp_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Normalize Grants.gov data to our unified grant schema"""
+        try:
+            # Extract basic information
+            grant_id = opp_data.get('number') or opp_data.get('opportunityId', '')
+            title = opp_data.get('title') or opp_data.get('opportunityTitle', '')
+            title = title.strip() if title else ''
+            description = opp_data.get('description', '').strip()
 
-            if award_floor and award_floor != '0':
-                try:
-                    amount_floor = int(float(award_floor))
-                except:
-                    pass
+            # Fix Summary: Use description if available, otherwise title
+            summary_content = description if description else title
+            summary = summary_content[:500] + '...' if len(summary_content) > 500 else summary_content
 
-            if award_ceiling and award_ceiling != '0':
-                try:
-                    amount_ceiling = int(float(award_ceiling))
-                except:
-                    pass
+            # Extract dates
+            open_date_str = opp_data.get('openDate')
+            close_date_str = opp_data.get('closeDate')
+
+            open_date = None
+            close_date = None
+            is_rolling = False
+
+            if open_date_str:
+                open_date = self._parse_date(open_date_str)
+
+            if close_date_str:
+                if close_date_str.lower() in ['none', 'rolling', 'multiple']:
+                    is_rolling = True
+                else:
+                    close_date = self._parse_date(close_date_str)
+
+            # Extract amounts using new parser
+            amount_floor = self._parse_amount(opp_data.get('awardFloor'))
+            amount_ceiling = self._parse_amount(opp_data.get('awardCeiling'))
 
             # Extract agency information - handle both formats
             agency = opp_data.get('agency') or opp_data.get('agencyName', '')
@@ -171,7 +204,7 @@ class GrantsGovIngester:
                 'source_url': source_url,
                 'title': title,
                 'description': description,
-                'summary': title[:500] + '...' if len(title) > 500 else title,
+                'summary': summary,
                 'agency': agency,
                 'agency_code': agency_code,
                 'amount_floor': amount_floor,

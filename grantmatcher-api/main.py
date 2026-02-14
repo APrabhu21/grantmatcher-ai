@@ -1,17 +1,38 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from pydantic import BaseModel
+import contextlib
+import logging
+import traceback
+import os
+from datetime import datetime, timezone
+from sentence_transformers import SentenceTransformer
+
 from database import get_db
 from models import User, Grant, IngestionRun, TrackedGrant, GrantApplication, MatchFeedback
 from auth import authenticate_user, create_access_token, get_current_user, get_password_hash
-from sqlalchemy import func
 from ingestion.vector_search import VectorSearch
-from datetime import datetime, timezone
-import os
 
-app = FastAPI()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Embedding model management
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load model on startup
+    print("Loading AI embedding model...")
+    app.state.model = SentenceTransformer("all-MiniLM-L6-v2")
+    print("AI model loaded successfully!")
+    yield
+    # Clean up on shutdown if needed
+    del app.state.model
+
+app = FastAPI(lifespan=lifespan)
 
 # CORS middleware for production
 app.add_middleware(
@@ -207,52 +228,65 @@ def get_admin_stats(db: Session = Depends(get_db)):
 
 @app.get("/api/matches")
 def get_matches(
+    request: Request,
     q: str = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get grant matches for the current user, optionally with ad-hoc search"""
-    if q:
-        # Ad-hoc search with provided query
-        query = q
-    else:
-        # Create search query from user profile
-        query_parts = []
+    try:
+        if q:
+            # Ad-hoc search with provided query
+            query = q
+        else:
+            # Create search query from user profile
+            query_parts = []
+            
+            # Safe attribute access
+            for attr in ['mission_statement', 'organization_name']:
+                val = getattr(current_user, attr, None)
+                if val:
+                    query_parts.append(val)
+            
+            # Handle list attributes
+            focus_areas = getattr(current_user, 'focus_areas', None)
+            if focus_areas and isinstance(focus_areas, list):
+                query_parts.extend(focus_areas)
 
-        if current_user.mission_statement:
-            query_parts.append(current_user.mission_statement)
+            if not query_parts:
+                return {"matches": [], "message": "Please complete your profile to get matches"}
 
-        if current_user.focus_areas:
-            query_parts.extend(current_user.focus_areas)
+            query = " ".join(query_parts)
 
-        if current_user.organization_name:
-            query_parts.append(current_user.organization_name)
+        # Perform vector search using pre-loaded model
+        model = getattr(request.app.state, 'model', None)
+        search = VectorSearch(model=model)
+        results = search.search_by_text(db, query, top_k=10)
 
-        if not query_parts:
-            return {"matches": [], "message": "Please complete your profile to get matches"}
+        # Format results
+        matches = []
+        for grant, score in results:
+            matches.append({
+                "id": grant.id,
+                "title": grant.title,
+                "description": grant.description[:200] + "..." if len(grant.description or "") > 200 else grant.description,
+                "agency": grant.agency,
+                "amount_floor": grant.amount_floor,
+                "amount_ceiling": grant.amount_ceiling,
+                "close_date": grant.close_date.isoformat() if grant.close_date else None,
+                "score": round(float(score), 3),
+                "explanation": f"Matches your {'search' if q else 'mission'} with {round(float(score) * 100, 1)}% relevance"
+            })
 
-        query = " ".join(query_parts)
-
-    # Perform vector search
-    search = VectorSearch()
-    results = search.search_by_text(db, query, top_k=10)
-
-    # Format results
-    matches = []
-    for grant, score in results:
-        matches.append({
-            "id": grant.id,
-            "title": grant.title,
-            "description": grant.description[:200] + "..." if len(grant.description or "") > 200 else grant.description,
-            "agency": grant.agency,
-            "amount_floor": grant.amount_floor,
-            "amount_ceiling": grant.amount_ceiling,
-            "close_date": grant.close_date.isoformat() if grant.close_date else None,
-            "score": round(score, 3),
-            "explanation": f"Matches your {'search' if q else 'mission'} with {round(score * 100, 1)}% relevance"
-        })
-
-    return {"matches": matches}
+        return {"matches": matches}
+    except Exception as e:
+        logger.error(f"Error in get_matches: {e}")
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Failed to load matches", "detail": str(e)}
+        )
 
 @app.get("/api/grants")
 def get_grants(
