@@ -67,18 +67,14 @@ export default function LoginPage() {
         });
 
         if (response.ok) {
-          // Auto-login after registration
-          const result = await signIn('credentials', {
-            email,
-            password,
-            redirect: false,
-          });
-
-          if (result?.error) {
-            setError('Registration successful, but login failed');
-          } else {
-            router.push('/onboarding/step1');
-          }
+          // Registration successful - redirect to login with success message
+          setError('');
+          setIsLogin(true); // Switch to login form
+          setEmail(email); // Keep the email filled
+          setPassword(''); // Clear password for security
+          setDisplayName('');
+          setConfirmPassword('');
+          alert('Registration successful! Please sign in with your new account.');
         } else {
           const data = await response.json();
           setError(data.detail || 'Registration failed');
