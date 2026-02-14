@@ -252,6 +252,57 @@ def get_matches(
 
     return {"matches": matches}
 
+@app.get("/api/grants")
+def get_grants(
+    skip: int = 0,
+    limit: int = 50,
+    q: str = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get a list of all grants, optionally filtered by search query"""
+    query = db.query(Grant).filter(Grant.status == 'active')
+
+    if q and q.strip():
+        # Simple text search in title and description
+        search_term = f"%{q.strip()}%"
+        query = query.filter(
+            (Grant.title.ilike(search_term)) |
+            (Grant.description.ilike(search_term)) |
+            (Grant.agency.ilike(search_term))
+        )
+
+    # Order by close date (upcoming first), then by title
+    query = query.order_by(
+        Grant.close_date.asc().nulls_last(),
+        Grant.title.asc()
+    )
+
+    total = query.count()
+    grants = query.offset(skip).limit(limit).all()
+
+    # Format results
+    grant_list = []
+    for grant in grants:
+        grant_list.append({
+            "id": grant.id,
+            "title": grant.title,
+            "description": grant.description[:300] + "..." if len(grant.description or "") > 300 else grant.description,
+            "agency": grant.agency,
+            "amount_floor": grant.amount_floor,
+            "amount_ceiling": grant.amount_ceiling,
+            "close_date": grant.close_date.isoformat() if grant.close_date else None,
+            "focus_areas": grant.focus_areas or [],
+            "geographic_scope": grant.geographic_scope
+        })
+
+    return {
+        "grants": grant_list,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
+
 @app.get("/api/grants/{grant_id}")
 def get_grant_detail(grant_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get detailed information for a specific grant"""
