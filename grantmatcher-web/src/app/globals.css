@@ -113,6 +113,23 @@ h6 {
   }
 }
 
+.animate-stagger-fade {
+  opacity: 0;
+  animation: staggerFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Gradient text */
 .gradient-text {
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
@@ -142,8 +159,63 @@ h6 {
   @apply bg-white rounded-lg shadow-sm border border-border overflow-hidden;
 }
 
+
+/* Skeleton Shimmer */
+.shimmer {
+  background: linear-gradient(90deg,
+      #f3f4f6 0%,
+      #e5e7eb 50%,
+      #f3f4f6 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-pulse {
+  @apply bg-slate-100 animate-pulse;
+}
+
+/* Enhanced Elevations */
 .catalogue-card {
-  @apply bg-white border border-border p-6 transition-all duration-300 hover:border-slate-400 hover:shadow-md;
+  @apply bg-white border border-border p-6 transition-all duration-300;
+}
+
+.catalogue-card:hover {
+  @apply border-slate-400 shadow-[0_10px_30px_-15px_rgba(0, 0, 0, 0.1)] -translate-y-1;
+}
+
+.catalogue-card .agency-icon {
+  @apply w-10 h-10 border border-slate-200 flex items-center justify-center font-serif text-slate-400 transition-colors duration-300;
+}
+
+.catalogue-card:hover .agency-icon {
+  @apply border-primary text-primary;
+}
+
+/* Match Score Badges */
+.score-badge {
+  @apply text-[10px] font-sans font-bold uppercase tracking-widest px-2 py-0.5 whitespace-nowrap border;
+}
+
+.score-high {
+  @apply text-primary border-primary bg-slate-50;
+}
+
+.score-med {
+  @apply text-accent border-accent/30 bg-accent/5;
+}
+
+.score-low {
+  @apply text-slate-400 border-slate-100 bg-slate-50;
 }
 
 /* Form styles */

@@ -283,6 +283,12 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                   Archive ID: {grant.source_id}
                 </span>
+                <button
+                  onClick={() => window.print()}
+                  className="mt-4 flex items-center gap-2 text-[10px] font-bold text-secondary hover:text-primary uppercase tracking-widest transition-colors print:hidden"
+                >
+                  <span>⎙</span> Download Official Record
+                </button>
               </div>
             </div>
           </div>

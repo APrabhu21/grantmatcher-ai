@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import GrantCardSkeleton from '@/components/GrantCardSkeleton';
 
 interface GrantMatch {
   id: string;
@@ -214,10 +215,23 @@ export default function Dashboard() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your grant matches...</p>
+      <div className="min-h-screen bg-transparent">
+        <div className="bg-white border-b border-border py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center">
+              <div className="h-12 w-64 bg-slate-100 skeleton-pulse mx-auto mb-4"></div>
+              <div className="h-4 w-48 bg-slate-50 skeleton-pulse mx-auto mb-10"></div>
+              <div className="h-16 w-full bg-slate-100 skeleton-pulse rounded-sm"></div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="mb-8 h-10 w-48 bg-slate-100 skeleton-pulse border-b border-slate-200 pb-4"></div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <GrantCardSkeleton key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -321,14 +335,20 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {matches.map((match) => (
-                <div key={match.id} className="catalogue-card group flex flex-col h-full bg-white">
+              {matches.map((match, i) => (
+                <div
+                  key={match.id}
+                  className="catalogue-card group flex flex-col h-full bg-white animate-stagger-fade"
+                  style={{ animationDelay: `${i * 0.05}s` }}
+                >
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-10 h-10 border border-slate-200 flex items-center justify-center font-serif text-slate-400 group-hover:border-primary group-hover:text-primary transition-colors">
+                      <div className="agency-icon">
                         {match.agency.charAt(0)}
                       </div>
-                      <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-slate-400 border border-slate-100 px-2 py-0.5 whitespace-nowrap">
+                      <span className={`score-badge ${match.score >= 0.8 ? 'score-high' :
+                        match.score >= 0.5 ? 'score-med' : 'score-low'
+                        }`}>
                         Match Score: {Math.round(match.score * 100)}%
                       </span>
                     </div>
