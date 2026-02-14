@@ -37,23 +37,7 @@ export default function LoginPage() {
         if (result?.error) {
           setError('Invalid credentials');
         } else {
-          // Check if user has completed profile
-          try {
-            const profileResponse = await fetch('/api/profile');
-            if (profileResponse.ok) {
-              const profile = await profileResponse.json();
-              // If user has mission statement, they have a profile
-              if (profile.mission_statement) {
-                router.push('/dashboard');
-              } else {
-                router.push('/onboarding/step1');
-              }
-            } else {
-              router.push('/onboarding/step1');
-            }
-          } catch {
-            router.push('/onboarding/step1');
-          }
+          router.push('/dashboard');
         }
       } else {
         // Register
