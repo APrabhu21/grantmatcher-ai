@@ -29,20 +29,35 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { error: errorData.detail || 'Failed to fetch matches' },
-        { status: response.status }
-      );
+      const errorText = await response.text();
+      console.error('Backend error on matches fetch:', response.status, errorText);
+      try {
+        const errorData = JSON.parse(errorText);
+        return NextResponse.json(
+          { error: errorData.detail || 'Failed to fetch matches' },
+          { status: response.status }
+        );
+      } catch (e) {
+        return NextResponse.json(
+          { error: 'Failed to fetch matches' },
+          { status: response.status }
+        );
+      }
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const responseText = await response.text();
+    try {
+      const data = JSON.parse(responseText);
+      return NextResponse.json(data);
+    } catch (e) {
+      console.error('Failed to parse matches JSON:', responseText);
+      throw new Error('Invalid JSON response from backend');
+    }
 
   } catch (error) {
     console.error('Error fetching matches:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }

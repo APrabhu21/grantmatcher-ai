@@ -12,6 +12,7 @@ import os
 from datetime import datetime, timezone
 import contextlib
 from fastembed import TextEmbedding
+import numpy as np
 
 from database import get_db
 from models import User, Grant, IngestionRun, TrackedGrant, GrantApplication, MatchFeedback
@@ -317,11 +318,21 @@ def get_matches(
         }
         
         # search_by_text now returns List[Tuple[Grant, float]] where Grant is the full object
+        logger.info(f"Querying VectorSearch for: {query[:50]}...")
         results = search.search_by_text(db, query, user_profile=user_profile, top_k=10)
+        logger.info(f"VectorSearch returned {len(results)} results")
 
         # Format results (VectorSearch already fetched the objects efficiently)
         matches = []
-        for grant, score in results:
+        for i, (grant, score) in enumerate(results):
+            # Safety check for NaN or non-serializable float values
+            try:
+                s = float(score)
+                if np.isnan(s) or np.isinf(s):
+                    s = 0.0
+            except:
+                s = 0.0
+                
             matches.append({
                 "id": grant.id,
                 "title": grant.title,
@@ -330,10 +341,11 @@ def get_matches(
                 "amount_floor": grant.amount_floor,
                 "amount_ceiling": grant.amount_ceiling,
                 "close_date": grant.close_date.isoformat() if grant.close_date else None,
-                "score": round(float(score), 3),
-                "explanation": f"Matches your {'search' if q else 'mission'} with {round(float(score) * 100, 1)}% relevance"
+                "score": round(s, 3),
+                "explanation": f"Matches your {'search' if q else 'mission'} with {round(s * 100, 1)}% relevance"
             })
-
+        
+        logger.info(f"Returning {len(matches)} formatted matches")
         return {"matches": matches}
     except Exception as e:
         logger.error(f"Error in get_matches: {e}")
