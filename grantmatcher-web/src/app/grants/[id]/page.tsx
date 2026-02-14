@@ -56,13 +56,13 @@ interface SavedGrant {
 
 interface ApplicationFormData {
   status: string;
-  applied_date?: string;
-  submitted_date?: string;
-  decision_date?: string;
-  amount_requested?: number;
-  amount_awarded?: number;
-  notes?: string;
-  internal_reference?: string;
+  applied_date?: string | null;
+  submitted_date?: string | null;
+  decision_date?: string | null;
+  amount_requested?: number | null;
+  amount_awarded?: number | null;
+  notes?: string | null;
+  internal_reference?: string | null;
 }
 
 export default function GrantDetailPage({ params }: { params: { id: string } }) {

@@ -46,9 +46,12 @@ const eligibilityOptions = [
 
 export default function OnboardingStep4() {
   const [selectedAttributes, setSelectedAttributes] = useState<string[]>(() => {
-    // Load from localStorage if available
-    const saved = localStorage.getItem('onboarding_eligibility_attributes');
-    return saved ? JSON.parse(saved) : [];
+    // Load from localStorage if available (only in browser)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('onboarding_eligibility_attributes');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
   const router = useRouter();
 

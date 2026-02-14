@@ -37,9 +37,12 @@ const predefinedFocusAreas = [
 
 export default function OnboardingStep3() {
   const [selectedAreas, setSelectedAreas] = useState<string[]>(() => {
-    // Load from localStorage if available
-    const saved = localStorage.getItem('onboarding_focus_areas');
-    return saved ? JSON.parse(saved) : [];
+    // Load from localStorage if available (only in browser)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('onboarding_focus_areas');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
   const [customArea, setCustomArea] = useState('');
   const [searchTerm, setSearchTerm] = useState('');

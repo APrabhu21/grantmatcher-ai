@@ -6,8 +6,11 @@ import OnboardingLayout from '@/components/OnboardingLayout';
 
 export default function OnboardingStep2() {
   const [missionStatement, setMissionStatement] = useState(() => {
-    // Load from localStorage if available
-    return localStorage.getItem('onboarding_mission_statement') || '';
+    // Load from localStorage if available (only in browser)
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('onboarding_mission_statement') || '';
+    }
+    return '';
   });
   const router = useRouter();
 

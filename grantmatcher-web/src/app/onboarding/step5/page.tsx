@@ -20,13 +20,19 @@ const deadlinePreferences = [
 
 export default function OnboardingStep5() {
   const [selectedAmounts, setSelectedAmounts] = useState<string[]>(() => {
-    // Load from localStorage if available
-    const saved = localStorage.getItem('onboarding_funding_amounts');
-    return saved ? JSON.parse(saved) : [];
+    // Load from localStorage if available (only in browser)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('onboarding_funding_amounts');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
   const [selectedDeadline, setSelectedDeadline] = useState(() => {
-    // Load from localStorage if available
-    return localStorage.getItem('onboarding_funding_deadline') || '';
+    // Load from localStorage if available (only in browser)
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('onboarding_funding_deadline') || '';
+    }
+    return '';
   });
   const router = useRouter();
 
