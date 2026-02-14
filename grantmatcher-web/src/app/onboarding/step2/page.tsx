@@ -46,7 +46,7 @@ export default function OnboardingStep2() {
             value={missionStatement}
             onChange={(e) => setMissionStatement(e.target.value)}
             placeholder="Example: We provide comprehensive health education and preventive care services to underserved communities in rural areas. Our programs focus on nutrition education, chronic disease prevention, and community wellness initiatives that empower individuals to take control of their health..."
-            className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+            className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none text-gray-900 placeholder-gray-500"
             maxLength={1000}
           />
           <div className="flex justify-between items-center mt-2">

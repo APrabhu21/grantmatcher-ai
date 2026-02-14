@@ -611,7 +611,7 @@ function ApplicationFormModal({
                 type="text"
                 value={formData.internal_reference}
                 onChange={(e) => setFormData({ ...formData, internal_reference: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-500"
                 placeholder="Your tracking number"
               />
             </div>
@@ -691,7 +691,7 @@ function ApplicationFormModal({
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-500"
               placeholder="Add any notes about your application..."
             />
           </div>

@@ -125,7 +125,7 @@ export default function OnboardingStep3() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Type to search..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
           />
         </div>
 
@@ -160,7 +160,7 @@ export default function OnboardingStep3() {
               onChange={(e) => setCustomArea(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addCustomArea()}
               placeholder="Enter a custom focus area..."
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
             />
             <button
               onClick={addCustomArea}
