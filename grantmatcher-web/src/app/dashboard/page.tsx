@@ -38,11 +38,36 @@ export default function Dashboard() {
     if (status === 'unauthenticated') {
       router.push('/login');
     } else if (status === 'authenticated') {
+      checkProfileCompletion();
+    }
+  }, [status, router]);
+
+  const checkProfileCompletion = async () => {
+    try {
+      const profileResponse = await fetch('/api/profile');
+      if (profileResponse.ok) {
+        const profile = await profileResponse.json();
+        // If user doesn't have mission statement, redirect to onboarding
+        if (!profile.mission_statement || profile.mission_statement.trim() === '') {
+          router.push('/onboarding/step1');
+          return;
+        }
+      } else {
+        // If profile fetch fails, assume user needs onboarding
+        router.push('/onboarding/step1');
+        return;
+      }
+
+      // Profile is complete, load dashboard data
       fetchMatches();
       fetchSavedGrants();
       fetchApplicationsCount();
+    } catch (error) {
+      console.error('Error checking profile:', error);
+      // On error, redirect to onboarding to be safe
+      router.push('/onboarding/step1');
     }
-  }, [status, router]);
+  };
 
   const fetchMatches = async (query?: string) => {
     try {
