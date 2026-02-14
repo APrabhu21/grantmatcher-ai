@@ -183,6 +183,33 @@ def update_profile(profile_data: ProfileUpdate, current_user: User = Depends(get
         }
     }
 
+@app.post("/api/admin/ingest")
+def trigger_ingestion(limit: int = 100, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Trigger the grant ingestion and embedding pipeline (Admin only)"""
+    # Simple check for admin - in a real app, use a proper role-based access
+    if current_user.email not in ["admin@grantmatcher.ai", "athar@example.com"]:  # Example admin emails
+        raise HTTPException(status_code=403, detail="Only administrators can trigger ingestion")
+        
+    try:
+        from ingestion.grants_gov import GrantsGovIngester
+        from ingestion.embeddings import GrantEmbedder
+        
+        ingester = GrantsGovIngester()
+        stats = ingester.ingest_grants(db, limit=limit)
+        
+        # Generate embeddings for any new/updated grants
+        embedder = GrantEmbedder()
+        embed_stats = embedder.generate_embeddings(db, limit=limit)
+        
+        return {
+            "message": "Ingestion complete",
+            "ingestion_stats": stats,
+            "embedding_stats": embed_stats
+        }
+    except Exception as e:
+        logger.error(f"Ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
+
 @app.get("/api/admin/stats")
 def get_admin_stats(db: Session = Depends(get_db)):
     """Get system statistics for admin dashboard"""
@@ -258,26 +285,27 @@ def get_matches(
 
             query = " ".join(query_parts)
 
-        # Perform vector search using pre-loaded model
+        # Perform hybrid vector search
         model = getattr(request.app.state, 'model', None)
         search = VectorSearch(model=model)
-        results = search.search_by_text(db, query, top_k=10) # returns list of (id, score)
+        
+        # Prepare user profile for boosting
+        user_profile = {
+            "organization_type": current_user.organization_type,
+            "focus_areas": current_user.focus_areas,
+            "annual_budget": current_user.annual_budget
+        }
+        
+        # search_by_text now returns List[Tuple[Grant, float]] where Grant is the full object
+        results = search.search_by_text(db, query, user_profile=user_profile, top_k=10)
 
-        # Bulk fetch grant details for the top K results to save memory
-        grant_ids = [r[0] for r in results]
-        grants_map = {g.id: g for g in db.query(Grant).filter(Grant.id.in_(grant_ids)).all()}
-
-        # Format results in original sorted order
+        # Format results (VectorSearch already fetched the objects efficiently)
         matches = []
-        for gid, score in results:
-            grant = grants_map.get(gid)
-            if not grant:
-                continue
-                
+        for grant, score in results:
             matches.append({
                 "id": grant.id,
                 "title": grant.title,
-                "description": grant.description[:200] + "..." if len(grant.description or "") > 200 else grant.description,
+                "description": grant.description[:200] + "..." if grant.description and len(grant.description) > 200 else (grant.description or ""),
                 "agency": grant.agency,
                 "amount_floor": grant.amount_floor,
                 "amount_ceiling": grant.amount_ceiling,

@@ -81,6 +81,24 @@ class GrantsGovIngester:
             
         return None
 
+    def _parse_amount(self, amount_str: Any) -> Optional[int]:
+        """Helper to parse currency/amount strings into integers"""
+        if not amount_str or amount_str == '0':
+            return None
+        
+        try:
+            if isinstance(amount_str, (int, float)):
+                return int(amount_str)
+            
+            # Clean string: remove $, commas, spaces
+            clean_str = amount_str.replace('$', '').replace(',', '').strip()
+            if not clean_str:
+                return None
+                
+            return int(float(clean_str))
+        except (ValueError, TypeError):
+            return None
+
     def normalize_grant_data(self, opp_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Normalize Grants.gov data to our unified grant schema (works with both old and new API)"""
         try:
@@ -89,6 +107,10 @@ class GrantsGovIngester:
             title = opp_data.get('title') or opp_data.get('opportunityTitle', '')
             title = title.strip() if title else ''
             description = opp_data.get('description', '').strip()
+
+            # Fix Summary: Use description if available, otherwise title
+            summary_content = description if description else title
+            summary = summary_content[:500] + '...' if len(summary_content) > 500 else summary_content
 
             # Extract dates
             open_date_str = opp_data.get('openDate')
@@ -111,54 +133,6 @@ class GrantsGovIngester:
                     if not close_date:
                         logger.warning(f"Could not parse close_date: {close_date_str}")
 
-    def _parse_amount(self, amount_str: Any) -> Optional[int]:
-        """Helper to parse currency/amount strings into integers"""
-        if not amount_str or amount_str == '0':
-            return None
-        
-        try:
-            if isinstance(amount_str, (int, float)):
-                return int(amount_str)
-            
-            # Clean string: remove $, commas, spaces
-            clean_str = amount_str.replace('$', '').replace(',', '').strip()
-            if not clean_str:
-                return None
-                
-            return int(float(clean_str))
-        except (ValueError, TypeError):
-            return None
-
-    def normalize_grant_data(self, opp_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Normalize Grants.gov data to our unified grant schema"""
-        try:
-            # Extract basic information
-            grant_id = opp_data.get('number') or opp_data.get('opportunityId', '')
-            title = opp_data.get('title') or opp_data.get('opportunityTitle', '')
-            title = title.strip() if title else ''
-            description = opp_data.get('description', '').strip()
-
-            # Fix Summary: Use description if available, otherwise title
-            summary_content = description if description else title
-            summary = summary_content[:500] + '...' if len(summary_content) > 500 else summary_content
-
-            # Extract dates
-            open_date_str = opp_data.get('openDate')
-            close_date_str = opp_data.get('closeDate')
-
-            open_date = None
-            close_date = None
-            is_rolling = False
-
-            if open_date_str:
-                open_date = self._parse_date(open_date_str)
-
-            if close_date_str:
-                if close_date_str.lower() in ['none', 'rolling', 'multiple']:
-                    is_rolling = True
-                else:
-                    close_date = self._parse_date(close_date_str)
-
             # Extract amounts using new parser
             amount_floor = self._parse_amount(opp_data.get('awardFloor'))
             amount_ceiling = self._parse_amount(opp_data.get('awardCeiling'))
@@ -166,16 +140,6 @@ class GrantsGovIngester:
             # Extract agency information - handle both formats
             agency = opp_data.get('agency') or opp_data.get('agencyName', '')
             agency_code = opp_data.get('agencyCode', '')
-
-            # Extract eligibility information - handle both string and list formats
-            eligible_applicant_types = []
-            applicant_types = opp_data.get('applicantTypes')
-            if applicant_types:
-                if isinstance(applicant_types, list):
-                    eligible_applicant_types = applicant_types
-                elif isinstance(applicant_types, str):
-                    # Split comma-separated string
-                    eligible_applicant_types = [t.strip() for t in applicant_types.split(',') if t.strip()]
 
             # Extract CFDA numbers - handle both string and list formats
             cfda_numbers = []
@@ -185,6 +149,42 @@ class GrantsGovIngester:
                     cfda_numbers = [cfda.get('cfdaNumber', '') for cfda in cfda_list if isinstance(cfda, dict) and cfda.get('cfdaNumber')]
                 elif isinstance(cfda_list, str):
                     cfda_numbers = [cfda_list.strip()] if cfda_list.strip() else []
+
+            # Fallback for missing description: Synthesize from title and metadata
+            if not description or len(description) < 10:
+                description = f"Funding opportunity from {agency} ({agency_code}). Title: {title}. "
+                if cfda_list:
+                    description += f"Associated with CFDA: {', '.join(cfda_numbers)}. "
+                description += "Please visit the source URL for full eligibility and application requirements."
+
+            summary = description[:500] + "..." if len(description) > 500 else description
+
+            # Extract Focus Areas from title (Keyword based)
+            focus_keywords = {
+                'health': ['medical', 'disease', 'hospital', 'clinical', 'health'],
+                'education': ['school', 'teacher', 'learning', 'curriculum', 'stem'],
+                'environment': ['water', 'climate', 'energy', 'conservation', 'pollution'],
+                'social': ['justice', 'community', 'homeless', 'veterans', 'youth'],
+                'research': ['laboratory', 'science', 'theoretical', 'university', 'study'],
+                'technology': ['software', 'digital', 'broadband', 'innovation', 'engineering']
+            }
+            
+            extracted_focus = []
+            title_lower = title.lower()
+            for focus, keywords in focus_keywords.items():
+                if any(kw in title_lower for kw in keywords):
+                    extracted_focus.append(focus)
+
+            # Extract applicant types - handle thin data formats
+            eligible_applicant_types = []
+            applicant_types = opp_data.get('applicantTypes')
+            if not applicant_types:
+                # Fallback: Guess based on title/agency if possible, but keep empty if unsure
+                pass
+            elif isinstance(applicant_types, list):
+                eligible_applicant_types = applicant_types
+            elif isinstance(applicant_types, str):
+                eligible_applicant_types = [t.strip() for t in applicant_types.split(',') if t.strip()]
 
             # Extract categories - handle both string and list formats
             eligible_categories = []
@@ -215,7 +215,7 @@ class GrantsGovIngester:
                 'eligible_applicant_types': eligible_applicant_types,
                 'eligible_categories': eligible_categories,
                 'cfda_numbers': cfda_numbers,
-                'focus_areas': [],  # Will be populated by NLP later
+                'focus_areas': extracted_focus,
                 'geographic_scope': 'national',  # Default for federal grants
                 'status': 'active',
                 'raw_data': opp_data
@@ -268,6 +268,10 @@ class GrantsGovIngester:
                 for opp in opportunities:
                     try:
                         stats['fetched'] += 1
+                        # DEBUG: Print raw data for the first item
+                        if stats['fetched'] == 1:
+                            logger.info(f"Raw opportunity data: {json.dumps(opp, indent=2)}")
+                        
                         # New API uses 'number' instead of 'opportunityId'
                         opp_id = opp.get('number') or opp.get('opportunityId')
 

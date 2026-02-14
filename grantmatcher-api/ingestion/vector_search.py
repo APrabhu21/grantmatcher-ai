@@ -31,40 +31,86 @@ class VectorSearch:
             return 0.0
         return float(np.dot(a, b) / (norm_a * norm_b))
 
-    def search_grants(self, db: Session, query_embedding: np.ndarray, top_k: int = 10) -> List[Tuple[Grant, float]]:
-        """Search for grants using vector similarity"""
-        # Get all grants with embeddings
-        grants = db.query(Grant).filter(
-            Grant.embedding_data.isnot(None),
-            Grant.status == 'active'
-        ).all()
+    def search_grants(self, db: Session, query_embedding: np.ndarray, user_profile: Optional[Dict[str, Any]] = None, top_k: int = 10) -> List[Tuple[Grant, float]]:
+        """
+        Search for grants using vector similarity + hybrid categorical scoring.
+        Memory-efficient: Only fetches necessary columns for scoring, then fetches full objects for top results.
+        """
+        from sqlalchemy import text
+        
+        # Get necessary columns for scoring to save memory
+        # We fetch ID, embedding, and metadata for boosts
+        grants_data = db.execute(text(
+            "SELECT id, embedding_data, eligible_applicant_types, focus_areas, agency "
+            "FROM grants WHERE embedding_data IS NOT NULL AND status = 'active'"
+        )).fetchall()
 
-        logger.info(f"Searching through {len(grants)} grants")
+        logger.info(f"Hybrid searching through {len(grants_data)} grants")
 
-        results = []
-        for grant in grants:
+        scored_results = []
+        user_type = user_profile.get('organization_type') if user_profile else None
+        user_focus = set(user_profile.get('focus_areas', [])) if user_profile else set()
+
+        for row in grants_data:
             try:
-                # Convert stored embedding back to numpy array
-                grant_embedding = np.array(grant.embedding_data)
-
-                # Calculate similarity
-                similarity = self.cosine_similarity(query_embedding, grant_embedding)
-
-                results.append((grant, similarity))
+                grant_id, embedding_json, eligibility, grant_focus, agency = row
+                
+                if not embedding_json:
+                    continue
+                    
+                grant_embedding = np.array(embedding_json)
+                
+                # 1. Semantic Score (Base)
+                base_score = self.cosine_similarity(query_embedding, grant_embedding)
+                
+                # 2. Hybrid Boosts
+                boost = 0.0
+                
+                # Eligibility Boost (e.g., +0.1)
+                if user_type and eligibility:
+                    # Handle both list and string formats from DB
+                    import json
+                    try:
+                        elig_list = eligibility if isinstance(eligibility, list) else json.loads(eligibility)
+                        if user_type in elig_list:
+                            boost += 0.1
+                    except:
+                        if user_type in str(eligibility):
+                            boost += 0.05
+                
+                # Focus Area Match (+0.05 per match, max 0.15)
+                if user_focus and grant_focus:
+                    try:
+                        focus_list = set(grant_focus if isinstance(grant_focus, list) else json.loads(grant_focus))
+                        overlap = user_focus.intersection(focus_list)
+                        boost += min(len(overlap) * 0.05, 0.15)
+                    except:
+                        pass
+                
+                final_score = base_score + boost
+                scored_results.append((grant_id, final_score))
 
             except Exception as e:
-                logger.warning(f"Error processing grant {grant.id}: {e}")
+                logger.warning(f"Error scoring grant {row[0]}: {e}")
                 continue
 
-        # Sort by similarity (highest first)
-        results.sort(key=lambda x: x[1], reverse=True)
+        # Sort by final score (highest first)
+        scored_results.sort(key=lambda x: x[1], reverse=True)
+        top_scored = scored_results[:top_k]
 
-        return results[:top_k]
+        # Fetch full Grant objects only for the top results to save memory
+        final_results = []
+        for grant_id, score in top_scored:
+            grant = db.query(Grant).get(grant_id)
+            if grant:
+                final_results.append((grant, score))
 
-    def search_by_text(self, db: Session, query: str, top_k: int = 10) -> List[Tuple[Grant, float]]:
-        """Search grants by text query"""
+        return final_results
+
+    def search_by_text(self, db: Session, query: str, user_profile: Optional[Dict[str, Any]] = None, top_k: int = 10) -> List[Tuple[Grant, float]]:
+        """Search grants by text query with hybrid boosting"""
         query_embedding = self.encode_query(query)
-        return self.search_grants(db, query_embedding, top_k)
+        return self.search_grants(db, query_embedding, user_profile, top_k)
 
 def test_vector_search():
     """Test the vector search functionality"""

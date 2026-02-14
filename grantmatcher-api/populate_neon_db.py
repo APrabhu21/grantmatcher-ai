@@ -10,7 +10,7 @@ import sys
 # ============================================================================
 # OPTION 1: Set your Neon connection string directly here (easier for Windows)
 # ============================================================================
-NEON_DATABASE_URL = ""
+NEON_DATABASE_URL = "postgresql://neondb_owner:npg_cjh9nGlNYxf1@ep-mute-wildflower-aihk8cmq-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 # ============================================================================
 # OPTION 2: Or leave it empty to use the DATABASE_URL environment variable
