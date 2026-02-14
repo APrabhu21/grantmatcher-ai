@@ -48,7 +48,7 @@ class ProfileUpdate(BaseModel):
     annual_budget: Optional[str] = None
     employee_count: Optional[str] = None
     geographic_focus: Optional[Dict] = None
-    eligibility_attributes: Optional[List] = None  # Changed from dict to list
+    eligibility_attributes: Optional[List[str]] = None  # Explicitly defined as list of strings
     funding_preferences: Optional[Dict] = None
 
 class GrantApplicationCreate(BaseModel):
