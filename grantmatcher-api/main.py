@@ -173,35 +173,44 @@ def get_profile(current_user: User = Depends(get_current_user)):
 @app.put("/api/profile")
 def update_profile(profile_data: ProfileUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Update user profile and regenerate embeddings if mission/focus areas changed"""
-    # Update user fields
-    for field, value in profile_data.dict(exclude_unset=True).items():
-        if hasattr(current_user, field):
-            setattr(current_user, field, value)
+    logger.info(f"Updating profile for user {current_user.email}")
+    logger.info(f"Data received: {profile_data.dict(exclude_unset=True)}")
+    
+    try:
+        # Update user fields
+        for field, value in profile_data.dict(exclude_unset=True).items():
+            if hasattr(current_user, field):
+                setattr(current_user, field, value)
 
-    # If mission statement or focus areas changed, we should regenerate user embedding
-    # For now, we'll just mark that embeddings need updating
-    current_user.embedding_updated_at = datetime.now(timezone.utc)
+        # If mission statement or focus areas changed, we should regenerate user embedding
+        # For now, we'll just mark that embeddings need updating
+        current_user.embedding_updated_at = datetime.now(timezone.utc)
 
-    db.commit()
-    db.refresh(current_user)
+        db.commit()
+        db.refresh(current_user)
+        logger.info(f"Profile updated successfully for {current_user.email}")
 
-    return {
-        "message": "Profile updated successfully",
-        "profile": {
-            "id": current_user.id,
-            "email": current_user.email,
-            "display_name": current_user.display_name,
-            "organization_name": current_user.organization_name,
-            "organization_type": current_user.organization_type,
-            "mission_statement": current_user.mission_statement,
-            "focus_areas": current_user.focus_areas,
-            "annual_budget": current_user.annual_budget,
-            "employee_count": current_user.employee_count,
-            "geographic_focus": current_user.geographic_focus,
-            "eligibility_attributes": current_user.eligibility_attributes,
-            "funding_preferences": current_user.funding_preferences,
+        return {
+            "message": "Profile updated successfully",
+            "profile": {
+                "id": current_user.id,
+                "email": current_user.email,
+                "display_name": current_user.display_name,
+                "organization_name": current_user.organization_name,
+                "organization_type": current_user.organization_type,
+                "mission_statement": current_user.mission_statement,
+                "focus_areas": current_user.focus_areas,
+                "annual_budget": current_user.annual_budget,
+                "employee_count": current_user.employee_count,
+                "geographic_focus": current_user.geographic_focus,
+                "eligibility_attributes": current_user.eligibility_attributes,
+                "funding_preferences": current_user.funding_preferences,
+            }
         }
-    }
+    except Exception as e:
+        logger.error(f"Error updating profile: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
 
 @app.post("/api/admin/ingest")
 def trigger_ingestion(limit: int = 100, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

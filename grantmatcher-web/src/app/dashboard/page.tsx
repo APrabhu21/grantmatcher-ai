@@ -44,16 +44,30 @@ export default function Dashboard() {
 
   const checkProfileCompletion = async () => {
     try {
+      console.log('Checking profile completion...');
       const profileResponse = await fetch('/api/profile');
+
+      if (profileResponse.status === 401) {
+        console.log('User unauthorized, redirecting to login');
+        router.push('/login');
+        return;
+      }
+
       if (profileResponse.ok) {
         const profile = await profileResponse.json();
+        console.log('Profile loaded:', profile.email);
+
         // If user doesn't have mission statement, redirect to onboarding
         if (!profile.mission_statement || profile.mission_statement.trim() === '') {
+          console.log('Profile incomplete (missing mission), redirecting to onboarding');
           router.push('/onboarding/step1');
           return;
         }
+
+        console.log('Profile complete, loading dashboard data');
       } else {
-        // If profile fetch fails, assume user needs onboarding
+        console.error('Failed to fetch profile:', profileResponse.status);
+        // If profile fetch fails but not 401, assume user needs onboarding
         router.push('/onboarding/step1');
         return;
       }

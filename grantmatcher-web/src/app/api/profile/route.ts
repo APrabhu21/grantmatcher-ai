@@ -50,6 +50,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Proxying PUT profile request for:', session.user?.email);
 
     // Forward the request to the FastAPI backend
     const backendUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/profile`;
@@ -64,7 +65,16 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorText = await response.text();
+      console.error('Backend error on PUT profile:', response.status, errorText);
+
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        errorData = { detail: errorText };
+      }
+
       return NextResponse.json(
         { error: errorData.detail || 'Failed to update profile' },
         { status: response.status }
@@ -72,10 +82,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const data = await response.json();
+    console.log('Profile update successful in proxy');
     return NextResponse.json(data);
 
   } catch (error) {
-    console.error('Error updating profile:', error);
+    console.error('Error updating profile in proxy:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
